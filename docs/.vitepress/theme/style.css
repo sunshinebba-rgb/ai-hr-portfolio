@@ -1,0 +1,120 @@
+/**
+ * 报告风视觉：参考「深度调研」类长文站点（清晰层级、强调色、舒适阅读宽度）
+ */
+:root {
+  --report-accent: #0d9488;
+  --report-accent-soft: rgba(13, 148, 136, 0.12);
+  --report-ink: #0f172a;
+  --report-muted: #64748b;
+  --report-card-border: rgba(15, 23, 42, 0.08);
+  --report-radius: 12px;
+}
+
+.dark {
+  --report-accent: #2dd4bf;
+  --report-accent-soft: rgba(45, 212, 191, 0.15);
+  --report-ink: #f1f5f9;
+  --report-muted: #94a3b8;
+  --report-card-border: rgba(148, 163, 184, 0.18);
+}
+
+/* 品牌色与默认主题协调 */
+:root {
+  --vp-c-brand-1: #0d9488;
+  --vp-c-brand-2: #14b8a6;
+  --vp-c-brand-3: #5eead4;
+  --vp-c-brand-soft: var(--report-accent-soft);
+}
+
+.dark {
+  --vp-c-brand-1: #2dd4bf;
+  --vp-c-brand-2: #5eead4;
+  --vp-c-brand-3: #99f6e4;
+}
+
+/* 报告页：略窄正文、更强标题层级 */
+.report-doc .vp-doc {
+  font-size: 16px;
+  line-height: 1.75;
+  letter-spacing: 0.01em;
+}
+
+.report-doc .vp-doc h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  border-bottom: 1px solid var(--report-card-border);
+  padding-bottom: 0.75rem;
+}
+
+.report-doc .vp-doc h2 {
+  margin-top: 2.25rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--report-card-border);
+  font-weight: 600;
+}
+
+.report-doc .vp-doc h3 {
+  color: var(--report-muted);
+  font-weight: 600;
+}
+
+/* 顶栏徽章 */
+.doc-hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--report-accent);
+  background: var(--report-accent-soft);
+  border: 1px solid var(--report-card-border);
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  margin-bottom: 1rem;
+}
+
+/* 表格：报告风描边与斑马纹 */
+.report-doc .vp-doc table {
+  display: table;
+  width: 100%;
+  border-radius: var(--report-radius);
+  overflow: hidden;
+  border: 1px solid var(--report-card-border);
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.report-doc .vp-doc tr:nth-child(2n) {
+  background: var(--vp-c-bg-soft);
+}
+
+.report-doc .vp-doc th {
+  background: var(--report-accent-soft);
+  color: var(--report-ink);
+  font-weight: 600;
+}
+
+.report-doc .vp-doc td,
+.report-doc .vp-doc th {
+  border-color: var(--report-card-border);
+}
+
+/* 代码块与 Mermaid 容器 */
+.report-doc .vp-doc div[class*='language-'] {
+  border-radius: var(--report-radius);
+  border: 1px solid var(--report-card-border);
+}
+
+.report-doc .mermaid {
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: var(--report-radius);
+  background: var(--vp-c-bg-soft);
+  border: 1px solid var(--report-card-border);
+}
+
+/* 首页 hero 与特性卡片略偏「报告封面」感 */
+.vp-doc .VPHomeHero .name,
+.vp-doc .VPHomeHero .text {
+  letter-spacing: -0.02em;
+}

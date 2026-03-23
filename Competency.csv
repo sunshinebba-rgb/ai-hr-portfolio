@@ -1,0 +1,5 @@
+employee_id,period,level,core_values,service_awareness,execution,learning_growth,problem_solving,communication,team_development,organization_dev,innovation,resource_integration,total_score
+73043d69-0dd6-4c68-9801-049db186fef1,2024-Q1,中层,4,5,4,4,5,4,4,4,5,4,43
+db9bce2f-0498-4987-957a-7636d4a47d35,2024-Q1,中层,3,5,4,3,3,5,3,5,4,3,38
+2eb8f712-f899-48b7-9d43-b8eb59573b18,2024-Q1,基层,3,3,4,4,0,0,0,0,0,0,14
+649e4cf2-863c-441b-b364-ae2790b8ecb3,2024-Q1,高层,5,4,5,5,4,5,5,4,5,5,47
