@@ -3,6 +3,7 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(
   defineConfig({
+    base: '/ai-hr-portfolio/',
     lang: 'zh-CN',
     title: '朱雅曼 | HR 架构师',
     description: 'AI 时代的组织与人才实战作品集',
@@ -34,12 +35,12 @@ export default withMermaid(
       ],
 
       socialLinks: [
-        { icon: 'github', link: 'https://github.com/你的用户名' }
+        { icon: 'github', link: 'https://github.com/' }
       ],
 
       footer: {
         message: '基于 VitePress 构建',
-        copyright: 'Copyright © 2026-Present 你的名字'
+        copyright: 'Copyright © 2026-Present 朱雅曼'
       }
     },
 
