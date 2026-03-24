@@ -7,6 +7,16 @@ pageClass: report-doc
 
 # AI驱动的人才盘点与绩效校准系统：把主观评价变成结构化决策
 
+这里是交互式演示（仅浏览器端渲染，避免本地存储在 SSR 下报错）：
+
+<ClientOnly>
+  <TalentApp />
+</ClientOnly>
+
+::: tip 说明
+若首次加载为空白，刷新页面即可；数据保存在浏览器 localStorage。
+:::
+
 ---
 
 ## 🎯 1. 决策问题定义（不从工具出发）

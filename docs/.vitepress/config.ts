@@ -1,8 +1,13 @@
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vitepress'
 import { withMermaid } from 'vitepress-plugin-mermaid'
 
 export default withMermaid(
   defineConfig({
+    vite: {
+      // 根项目与 VitePress 内嵌的 Vite 类型不完全一致，插件仍可在构建时正常工作
+      plugins: [tailwindcss() as never]
+    },
     base: '/ai-hr-portfolio/',
     lang: 'zh-CN',
     title: '朱雅曼 | HR 架构师',
@@ -29,7 +34,7 @@ export default withMermaid(
           collapsed: false,
           items: [
             { text: '2026 HR 转型白皮书', link: '/ai-strategy' },
-            { text: '心理学在算法时代的价值', link: '/psychology' }
+            { text: 'AI 驱动的人力效率提升实战', link: '/ai-efficiency' }
           ]
         }
       ],
