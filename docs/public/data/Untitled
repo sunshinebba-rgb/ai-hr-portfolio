@@ -1,0 +1,62 @@
+{
+  "version": "2.0",
+  "config_name": "AI驱动的人才盘点系统逻辑配置",
+  "data_cleaning": {
+    "min_char_count": 20,
+    "pii_masking": true,
+    "confidence_levels": {
+      "high": 0.8,
+      "medium": 0.5,
+      "low": 0
+    }
+  },
+  "levels": {
+    "junior": {
+      "label": "基层员工",
+      "weights": {
+        "performance": 0.35,
+        "potential": 0.25,
+        "drive": 0.20,
+        "collaboration": 0.20
+      },
+      "dimensions": ["高效执行", "学习成长", "责任担当", "团队合作"]
+    },
+    "middle": {
+      "label": "中层管理者",
+      "weights": {
+        "problem_solving": 0.30,
+        "influence": 0.25,
+        "coaching": 0.20,
+        "resilience": 0.15,
+        "innovation": 0.10
+      },
+      "dimensions": ["解决问题", "沟通影响", "培养人才", "先公后私", "创新能力"]
+    },
+    "senior": {
+      "label": "高层领导",
+      "weights": {
+        "strategy": 0.35,
+        "insight": 0.25,
+        "change_management": 0.20,
+        "ambition": 0.10,
+        "leadership": 0.10
+      },
+      "dimensions": ["决策力", "商业洞察", "变革创新", "事业雄心", "领导激励"]
+    }
+  },
+  "nine_box_logic": {
+    "x_axis": "业绩",
+    "y_axis": "潜力",
+    "thresholds": {
+      "high": [86, 100],
+      "mid": [61, 85],
+      "low": [0, 60]
+    },
+    "labels": {
+      "3-3": "核心人才",
+      "1-3": "明日之星",
+      "3-1": "专业骨干",
+      "1-1": "优化对象"
+    }
+  }
+}

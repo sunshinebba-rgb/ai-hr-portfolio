@@ -1,0 +1,222 @@
+[
+  {
+    "id": "T001",
+    "name": "陈默",
+    "level": "junior",
+    "department": "研发部",
+    "raw_review": "本季度独立承担用户中心接口重构，提前交付且缺陷率低于团队均值。主动学习云原生与单元测试最佳实践，Code Review 中多次提出可落地方案。跨组对接顺畅，复盘文档完整，被导师评为「高潜新人」。",
+    "manual_tags": ["高效执行", "主动学习", "协作顺畅"],
+    "expected_box": "3-3",
+    "pred_performance": 91,
+    "pred_potential": 88
+  },
+  {
+    "id": "T002",
+    "name": "林晓",
+    "level": "middle",
+    "department": "市场部",
+    "raw_review": "活动 KPI 全部达成，但在团队管理上反馈偏少，1on1 频次不足。跨部门立项时偶有摩擦，对下属培养缺乏系统计划，更多依赖个人冲锋而非机制沉淀。",
+    "manual_tags": ["结果导向", "管理待加强"],
+    "expected_box": "3-1",
+    "pred_performance": 82,
+    "pred_potential": 55
+  },
+  {
+    "id": "T003",
+    "name": "王磊",
+    "level": "junior",
+    "department": "运营部",
+    "raw_review": "交付常踩点甚至需反复催促，对活动数据复盘敷衍。学习新运营工具进度慢，仍停留在基础操作，主动性与责任心均有明显短板。",
+    "manual_tags": ["执行力弱", "学习慢"],
+    "expected_box": "1-1",
+    "pred_performance": 48,
+    "pred_potential": 42
+  },
+  {
+    "id": "T004",
+    "name": "周航",
+    "level": "senior",
+    "department": "产品部",
+    "raw_review": "负责年度路线图与资源博弈，在多 BU 冲突中推动共识并形成可执行里程碑。能洞察业务拐点，提出创新试点并承担失败复盘，团队梯队建设初见成效。",
+    "manual_tags": ["战略洞察", "创新试点", "梯队建设"],
+    "expected_box": "3-3",
+    "pred_performance": 93,
+    "pred_potential": 90
+  },
+  {
+    "id": "T005",
+    "name": "赵敏",
+    "level": "middle",
+    "department": "人力行政部",
+    "raw_review": "薪酬项目按期上线，问题闭环及时。但在影响高层决策时表达偏保守，对组织变革的推动力度一般；教练与辅导行为不稳定，团队士气波动时需更多介入。",
+    "manual_tags": ["执行稳健", "影响待提升"],
+    "expected_box": "2-2",
+    "pred_performance": 74,
+    "pred_potential": 68
+  },
+  {
+    "id": "T006",
+    "name": "孙洋",
+    "level": "junior",
+    "department": "技术部",
+    "raw_review": "入职半年已能独立排障与上线，主动承担值班与文档沉淀。对中间件与性能优化表现出强烈兴趣，业余时间完成内部技术分享两次，同事评价积极。",
+    "manual_tags": ["成长快", "主动承担"],
+    "expected_box": "2-3",
+    "pred_performance": 76,
+    "pred_potential": 86
+  },
+  {
+    "id": "T007",
+    "name": "韩梅",
+    "level": "senior",
+    "department": "业务部",
+    "raw_review": "大客户续约与回款指标连续超标，客户关系深厚。但对数字化工具与新业务模式兴趣有限，更依赖经验路径；团队授权偏紧，年轻人成长空间受限。",
+    "manual_tags": ["业绩突出", "模式偏传统"],
+    "expected_box": "3-1",
+    "pred_performance": 88,
+    "pred_potential": 52
+  },
+  {
+    "id": "T008",
+    "name": "何杰",
+    "level": "middle",
+    "department": "研发部",
+    "raw_review": "架构方案多次延期，线上事故后复盘流于形式。跨团队沟通易起冲突，对下属批评多支持少，韧性不足，压力下决策摇摆。",
+    "manual_tags": ["延期", "沟通冲突", "韧性不足"],
+    "expected_box": "1-2",
+    "pred_performance": 52,
+    "pred_potential": 63
+  },
+  {
+    "id": "T009",
+    "name": "邓薇",
+    "level": "junior",
+    "department": "市场部",
+    "raw_review": "文案与投放数据平平，但用户访谈与竞品分析做得细，提出过两条被采纳的增长假设。当前产出尚未完全兑现，潜力需项目历练放大。",
+    "manual_tags": ["洞察好", "产出待提"],
+    "expected_box": "1-3",
+    "pred_performance": 55,
+    "pred_potential": 82
+  },
+  {
+    "id": "T010",
+    "name": "冯凯",
+    "level": "senior",
+    "department": "运营部",
+    "raw_review": "大促全链路零重大故障，资源协调与应急指挥出色。已开始培养接班人并下沉 SOP，在组织内具备横向影响力，战略与执行兼备。",
+    "manual_tags": ["稳态交付", "影响力", "带人"],
+    "expected_box": "3-2",
+    "pred_performance": 90,
+    "pred_potential": 72
+  },
+  {
+    "id": "T011",
+    "name": "罗婷",
+    "level": "middle",
+    "department": "产品部",
+    "raw_review": "需求评审清晰、原型迭代快，与研发测试配合默契。本季度无重大延期，体验指标小幅提升；在创新课题上愿意试错，团队氛围正向。",
+    "manual_tags": ["协作好", "迭代快"],
+    "expected_box": "2-2",
+    "pred_performance": 71,
+    "pred_potential": 70
+  },
+  {
+    "id": "T012",
+    "name": "丁一",
+    "level": "junior",
+    "department": "业务部",
+    "raw_review": "客户拜访量达标，但成单转化偏低，对异议处理话术依赖主管。学习意愿一般，培训作业偶有拖欠，需加强自驱与复盘习惯。",
+    "manual_tags": ["勤奋度一般", "转化弱"],
+    "expected_box": "2-1",
+    "pred_performance": 62,
+    "pred_potential": 48
+  },
+  {
+    "id": "T013",
+    "name": "许倩",
+    "level": "senior",
+    "department": "人力行政部",
+    "raw_review": "主导文化调研与干部盘点，方案被集团采纳。能连接业务语言与 HR 专业工具，推动管理层在人才议题上形成共识，具备集团级视野。",
+    "manual_tags": ["组织洞察", "高层影响"],
+    "expected_box": "3-3",
+    "pred_performance": 89,
+    "pred_potential": 87
+  },
+  {
+    "id": "T014",
+    "name": "高翔",
+    "level": "middle",
+    "department": "技术部",
+    "raw_review": "带领小组完成核心链路降本，技术方案扎实。对下属辅导频次高，跨部门项目牵头多，但在行业前沿跟踪上投入不足，创新课题偏少。",
+    "manual_tags": ["技术扎实", "带组稳"],
+    "expected_box": "3-2",
+    "pred_performance": 84,
+    "pred_potential": 70
+  },
+  {
+    "id": "T015",
+    "name": "叶青",
+    "level": "junior",
+    "department": "产品部",
+    "raw_review": "需求文档多次返工，与研发对齐成本高，截止时间意识薄弱。沟通偏被动，对业务目标理解停留在执行层，需系统训练结构化表达与优先级管理。",
+    "manual_tags": ["返工多", "被动"],
+    "expected_box": "1-2",
+    "pred_performance": 49,
+    "pred_potential": 58
+  },
+  {
+    "id": "T016",
+    "name": "白杨",
+    "level": "middle",
+    "department": "市场部",
+    "raw_review": "品牌联名项目声量与转化双达标，舆情应对及时。主动搭建与销售的联合复盘机制，在区域经理中有较强号召力，具备进一步放大影响的潜质。",
+    "manual_tags": ["项目成功", "跨部门"],
+    "expected_box": "2-3",
+    "pred_performance": 78,
+    "pred_potential": 84
+  },
+  {
+    "id": "T017",
+    "name": "沈冰",
+    "level": "senior",
+    "department": "研发部",
+    "raw_review": "长期负责基础架构，稳定性贡献大但业务感知偏弱。近一年主动参与业务共创较少，技术视野仍强，若加强业务翻译能力可再上一个台阶。",
+    "manual_tags": ["稳架构", "业务弱"],
+    "expected_box": "2-2",
+    "pred_performance": 79,
+    "pred_potential": 65
+  },
+  {
+    "id": "T018",
+    "name": "任远",
+    "level": "junior",
+    "department": "运营部",
+    "raw_review": "活动执行无差错，数据报表及时。主动报名数据分析训练营并在周会分享结论，虽大盘指标未拔尖，但学习曲线陡峭，值得给挑战性项目试炼。",
+    "manual_tags": ["执行稳", "学习意愿强"],
+    "expected_box": "2-3",
+    "pred_performance": 69,
+    "pred_potential": 81
+  },
+  {
+    "id": "T019",
+    "name": "方蕾",
+    "level": "middle",
+    "department": "业务部",
+    "raw_review": "区域排名垫底两个季度，客户结构单一且未按计划开拓新行业。团队士气低迷，与总部策略对齐不足，需强干预与目标重塑。",
+    "manual_tags": ["业绩承压", "开拓不足"],
+    "expected_box": "1-1",
+    "pred_performance": 45,
+    "pred_potential": 40
+  },
+  {
+    "id": "T020",
+    "name": "陆川",
+    "level": "senior",
+    "department": "产品部",
+    "raw_review": "从 0 到 1 孵化新业务线，商业模式验证通过预立项。善于整合内外资源，在模糊环境中快速试错并收敛路径，高管层对其野心与执行力评价高。",
+    "manual_tags": ["0-1", "资源整合", "高管认可"],
+    "expected_box": "3-3",
+    "pred_performance": 92,
+    "pred_potential": 91
+  }
+]

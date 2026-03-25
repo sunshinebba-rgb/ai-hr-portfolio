@@ -5,7 +5,6 @@ import { withMermaid } from 'vitepress-plugin-mermaid'
 export default withMermaid(
   defineConfig({
     vite: {
-      // 根项目与 VitePress 内嵌的 Vite 类型不完全一致，插件仍可在构建时正常工作
       plugins: [tailwindcss() as never]
     },
     base: '/ai-hr-portfolio/',
@@ -14,33 +13,27 @@ export default withMermaid(
     description: 'AI 时代的组织与人才实战作品集',
 
     themeConfig: {
+      // 1. 导航栏配置
       nav: [
         { text: '首页', link: '/' },
         { text: '人才系统', link: '/talent-system' },
-        { text: 'AI 方法论', link: '/ai-strategy' }
+        { text: 'AI 方法论', link: '/ai-strategy' },
+        { text: '盘点规则库', link: '/rules' }
       ],
 
+      // 2. 侧边栏配置
       sidebar: [
         {
           text: '核心作品',
           collapsed: false,
           items: [
-            { text: 'AI 驱动的人才盘点系统', link: '/talent-system' },
-            { text: '绩效运营的自动化重构', link: '/performance-auto' }
-          ]
-        },
-        {
-          text: '深度思考',
-          collapsed: false,
-          items: [
-            { text: '2026 HR 转型白皮书', link: '/ai-strategy' },
-            { text: 'AI 驱动的人力效率提升实战', link: '/ai-efficiency' }
+            { text: 'AI 驱动的人才盘点系统', link: '/talent-system' }
           ]
         }
       ],
 
       socialLinks: [
-        { icon: 'github', link: 'https://github.com/' }
+        { icon: 'github', link: 'https://github.com/sunshinebba-rgb/ai-hr-portfolio' }
       ],
 
       footer: {
