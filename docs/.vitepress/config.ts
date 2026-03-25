@@ -17,8 +17,7 @@ export default withMermaid(
       nav: [
         { text: '首页', link: '/' },
         { text: '人才系统', link: '/talent-system' },
-        { text: 'AI 方法论', link: '/ai-strategy' },
-        { text: '盘点规则库', link: '/rules' }
+        { text: 'AI 方法论', link: '/ai-strategy' }
       ],
 
       // 2. 侧边栏配置

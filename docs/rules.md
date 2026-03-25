@@ -232,13 +232,39 @@ outline: [2, 3]  # 显示 2 到 3 级标题的大纲
               positive_indicators: ["激励团队", "鼓舞士气", "凝聚人心"]
               negative_indicators: ["士气低落", "缺乏激励", "团队涣散"]
 
-  # 3. 模型判定规则
+  # 3. 模型判定规则 (精修版)
   model_logic:
-    # 九宫格算法
+    # 九宫格坐标核心算法
     nine_box:
       x_axis:
         name: "业绩维度"
-        formula: "performance_score = (量化指标分 × 0.7) + (上级业绩评价表打分 × 0.3)"
+        # 核心权重公式
+        formula: "performance_score = (average_performance_score * 0.7) + (daily_work_score * 0.3)"
+        
+        # 30% 权重：日常工作评分细则 (基于 BEI 行为观察)
+        daily_work_evaluation:
+          calculation: "daily_work_score = average(贡献分, 质量分, 及时性分)"
+          dimensions:
+            - dimension: "工作贡献"
+              levels:
+                9-10: "岗位工作贡献远超预期，对部门业务产生显著推动"
+                6-8: "岗位工作贡献超出预期，能主动承担额外职责"
+                3-5: "岗位工作贡献达到预期，按部就班完成任务"
+                0-2: "岗位工作贡献未达到预期，需密切关注"
+            
+            - dimension: "工作质量"
+              levels:
+                9-10: "工作质量卓越，完全胜任岗位要求且具备标杆水准"
+                6-8: "工作质量符合期望，能稳定交付高质量产出"
+                3-5: "工作质量勉强符合期望，存在小瑕疵但基本达标"
+                0-2: "工作质量不符合期望，达不到基本岗位要求"
+
+            - dimension: "工作完成及时性"
+              levels:
+                9-10: "所有工作都能及时或提前完成，具备极强的节奏感"
+                6-8: "大部分工作能按时完成，项目推进效率较高"
+                3-5: "部分工作能按时完成，偶尔存在拖延现象"
+                0-2: "工作几乎不能按期完成，经常性拖延，影响团队进度"
         mapping:
           1:
             range: "0-60分"
