@@ -1,8 +1,58 @@
 /**
- * AI 驱动分析引擎（模拟实现）
+ * 人才洞察分析引擎（模拟实现）
  * 从非结构化评语中提取特征、分类、评分、生成建议
+ * 与表单结构化输入（横轴复合分、职级能力项）双向联动
  */
-import type { EmployeeInput, AIAnalysis } from '../types';
+import type { EmployeeInput, AIAnalysis, JobTier } from '../types';
+import { computeDailyWorkPercent, computeXAxisTotal } from '../dailyWorkRules';
+import { COMPETENCY_SOURCES } from '../competencyRules';
+import { semanticScanComment } from './semanticEngine';
+
+const JOB_TIER_ORG: Record<JobTier, 'junior' | 'middle' | 'senior'> = {
+  基层: 'junior',
+  中层: 'middle',
+  高层: 'senior'
+};
+
+/** 横轴：绩效×0.7 + 日常得分×0.3（日常项为一至四分） */
+function computeFormXAxis(emp: EmployeeInput): number | null {
+  const p = emp.performanceScore;
+  if (p === undefined || p === null) return null;
+  const d = emp.dailyTiers;
+  if (!d || d.contribution == null || d.quality == null || d.timeliness == null) return null;
+  const pct = computeDailyWorkPercent({
+    contribution: d.contribution,
+    quality: d.quality,
+    timeliness: d.timeliness
+  });
+  if (pct === null) return null;
+  return computeXAxisTotal(p, pct);
+}
+
+/** 纵轴：当前职级下全部能力项均为 0–7 分，百分制 = Σ / (n×7) × 100 */
+function computeFormPotential(emp: EmployeeInput): number | null {
+  const jt = emp.jobTier;
+  if (!jt || !emp.competencyScores) return null;
+  const rows = COMPETENCY_SOURCES[JOB_TIER_ORG[jt]];
+  const vals: number[] = [];
+  for (const r of rows) {
+    const v = emp.competencyScores[r.rowKey];
+    if (v === undefined || v === null || Number.isNaN(Number(v))) return null;
+    vals.push(Math.max(0, Math.min(7, Number(v))));
+  }
+  if (vals.length === 0) return null;
+  const maxSum = 7 * vals.length;
+  return Math.round((vals.reduce((a, b) => a + b, 0) / maxSum) * 100);
+}
+
+/** 从评语语义扫描得到 Y 百分制（与表单公式一致） */
+function potentialFromSemanticScores(scores: Record<string, number>, org: 'junior' | 'middle' | 'senior'): number {
+  const rows = COMPETENCY_SOURCES[org];
+  const vals = rows.map(r => Math.max(0, Math.min(7, Math.round(scores[r.rowKey] ?? 3))));
+  const maxSum = 7 * vals.length;
+  if (maxSum === 0) return 50;
+  return Math.round((vals.reduce((a, b) => a + b, 0) / maxSum) * 100);
+}
 
 // 能力词库 - 正向
 const ABILITY_POSITIVE: Record<string, number> = {
@@ -40,6 +90,9 @@ export function runAIAnalysis(emp: EmployeeInput): AIAnalysis {
   const fullText = [emp.performanceComment, emp.keyEvents, emp.developmentFeedback].join(' ');
   const lines = emp.performanceComment.split(/[。；.!?]/).filter(Boolean);
 
+  const org = emp.jobTier ? JOB_TIER_ORG[emp.jobTier] : 'junior';
+  const { hits: semanticHits, scores: semanticScores } = semanticScanComment(emp.performanceComment || '', org);
+
   // 1. 特征提取
   const pos = extractKeywords(fullText, ABILITY_POSITIVE);
   const neg = extractKeywords(fullText, ABILITY_NEGATIVE);
@@ -69,26 +122,43 @@ export function runAIAnalysis(emp: EmployeeInput): AIAnalysis {
     classification['抗压能力'] = { strength: '中', evidence: lines.filter(l => emotionWords.some(e => l.includes(e))).slice(0, 2) };
   }
 
-  // 3. 模型判断
-  let perfBase = emp.performanceScore ?? 70;
-  const posScore = pos.total;
-  const negScore = neg.total;
-  perfBase = Math.max(0, Math.min(100, perfBase + (posScore / 10) - (negScore / 5)));
-  const potentialBase = 65 + (pos.total * 3) - (neg.total * 5);
-  const potentialScore = Math.max(0, Math.min(100, potentialBase));
+  const formX = computeFormXAxis(emp);
+  const formY = computeFormPotential(emp);
 
-  // 风险信号强则降分
+  // 3. 模型判断
+  let perfBase: number;
+  if (formX !== null) {
+    perfBase = formX;
+  } else {
+    perfBase = emp.performanceScore ?? 70;
+    const posScore = pos.total;
+    const negScore = neg.total;
+    perfBase = Math.max(0, Math.min(100, perfBase + (posScore / 10) - (negScore / 5)));
+  }
+
+  let potentialScore: number;
+  if (formY !== null) {
+    potentialScore = formY;
+  } else {
+    potentialScore = potentialFromSemanticScores(semanticScores, org);
+    const potentialBase = potentialScore + (pos.total * 2) - (neg.total * 4);
+    potentialScore = Math.max(0, Math.min(100, potentialBase));
+  }
+
+  // 风险信号强则降分（仅当未使用结构化潜力分时）
   const riskSignals = ['热情下降', '意愿低', '被动', '下滑', '缺乏'];
   const hasRisk = riskSignals.some(r => fullText.includes(r));
-  const adjPerf = hasRisk ? perfBase * 0.85 : perfBase;
-  const adjPot = hasRisk ? potentialScore * 0.8 : potentialScore;
+  let adjPerf = perfBase;
+  let adjPot = potentialScore;
+  if (formX === null && hasRisk) adjPerf = perfBase * 0.85;
+  if (formY === null && hasRisk) adjPot = potentialScore * 0.8;
 
   const perfGrade = scoreToGrade(adjPerf);
   const potGrade = scoreToGrade(adjPot);
   const gridPosition = `${perfGrade}-${potGrade}`;
 
   // 置信度
-  const evidenceCount = abilityWords.length + improvementPoints.length;
+  const evidenceCount = abilityWords.length + improvementPoints.length + semanticHits.length;
   const conf = (c: number) => (c >= 5 ? '高' as const : c >= 3 ? '中' as const : '低' as const);
 
   // 4. 人才标签
@@ -129,10 +199,11 @@ export function runAIAnalysis(emp: EmployeeInput): AIAnalysis {
   return {
     featureExtraction: { abilityWords, emotionWords, improvementPoints },
     classification,
+    semanticHits,
     modelJudgment: {
       performanceScore: Math.round(adjPerf),
       potentialScore: Math.round(adjPot),
-      confidence: { performance: conf(evidenceCount), potential: conf(evidenceCount - 1) },
+      confidence: { performance: conf(evidenceCount), potential: conf(Math.max(0, evidenceCount - 1)) },
     },
     suggestion: {
       gridPosition,

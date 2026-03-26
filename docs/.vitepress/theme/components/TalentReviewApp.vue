@@ -182,66 +182,131 @@
                   </button>
                 </div>
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
-                    <h3 class="text-base font-bold text-slate-900">模型分析结果</h3>
-                    <span class="text-xs text-slate-400"
-                      >置信度 绩效:{{ selectedRecord.aiAnalysis.modelJudgment.confidence.performance }} 潜力:{{
-                        selectedRecord.aiAnalysis.modelJudgment.confidence.potential
-                      }}</span
-                    >
+                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm ring-1 ring-slate-100/80">
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">原始输入</p>
+                  <h3 class="mt-1 text-base font-bold text-slate-900">结构化档案复盘</h3>
+                  <div class="mt-4 space-y-4 text-sm">
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                      <p class="mb-2 text-xs font-semibold text-slate-700">一、基本信息</p>
+                      <dl class="grid grid-cols-1 gap-2 sm:grid-cols-2">
+                        <div><span class="text-slate-500">姓名</span> · {{ selectedRecord.employee.name }}</div>
+                        <div><span class="text-slate-500">部门/岗位</span> · {{ selectedRecord.employee.department }} {{ selectedRecord.employee.role }}</div>
+                        <div><span class="text-slate-500">职级层级</span> · {{ selectedRecord.employee.jobTier ?? selectedRecord.employee.level }}</div>
+                        <div><span class="text-slate-500">入职时长</span> · {{ selectedRecord.employee.tenure }}</div>
+                      </dl>
+                    </div>
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                      <p class="mb-2 text-xs font-semibold text-slate-700">二、业绩结果（横轴）</p>
+                      <p class="text-slate-600">
+                        绩效分（百分制）<b class="text-slate-900">{{ selectedRecord.employee.performanceScore ?? '—' }}</b>
+                      </p>
+                      <div v-if="selectedRecord.employee.dailyTiers" class="mt-2 space-y-2">
+                        <p
+                          v-for="axis in DAILY_AXIS_META"
+                          :key="'d-' + axis.key"
+                          class="text-xs leading-relaxed text-slate-600"
+                        >
+                          <span class="font-medium text-indigo-900">{{ axis.title }}</span>
+                          <template v-if="selectedRecord.employee.dailyTiers[axis.key]">
+                            · {{ DAILY_TIER_HEADLINE[axis.key][selectedRecord.employee.dailyTiers[axis.key]!] }}
+                          </template>
+                          <template v-else> · 未录入</template>
+                        </p>
+                      </div>
+                    </div>
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                      <p class="mb-2 text-xs font-semibold text-slate-700">三、素质评价（纵轴 · 各 0–7 分）</p>
+                      <ul class="space-y-1.5">
+                        <li
+                          v-for="row in COMPETENCY_SOURCES[jobTierToOrg(selectedRecord.employee.jobTier ?? '基层')]"
+                          :key="'cmp-' + row.rowKey"
+                          class="flex flex-wrap justify-between gap-2 text-xs text-slate-700"
+                        >
+                          <span>{{ row.competencyName }}</span>
+                          <span class="tabular-nums font-semibold text-indigo-900">{{
+                            selectedRecord.employee.competencyScores?.[row.rowKey] ?? '—'
+                          }}</span>
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
+                      <p class="mb-2 text-xs font-semibold text-slate-700">四、发展洞察原文</p>
+                      <p class="whitespace-pre-wrap text-xs leading-relaxed text-slate-700">
+                        {{ selectedRecord.employee.performanceComment || '—' }}
+                      </p>
+                      <p v-if="selectedRecord.employee.keyEvents" class="mt-2 whitespace-pre-wrap text-xs text-slate-600">
+                        <span class="font-medium text-slate-700">关键事件</span> · {{ selectedRecord.employee.keyEvents }}
+                      </p>
+                      <p v-if="selectedRecord.employee.developmentFeedback" class="mt-2 whitespace-pre-wrap text-xs text-slate-600">
+                        <span class="font-medium text-slate-700">发展反馈</span> · {{ selectedRecord.employee.developmentFeedback }}
+                      </p>
+                    </div>
                   </div>
-                  <div class="grid grid-cols-1 gap-4 text-sm sm:grid-cols-2">
-                    <div>
-                      <div class="mb-1 text-slate-500">能力词提取</div>
-                      <div class="flex flex-wrap gap-2">
+                </div>
+
+                <div class="rounded-2xl border border-indigo-200/80 bg-gradient-to-b from-indigo-50/40 to-white p-6 shadow-sm">
+                  <p class="text-[10px] font-bold uppercase tracking-wider text-indigo-600">AI 结论</p>
+                  <h3 class="mt-1 text-base font-bold text-slate-900">智能分析卡片</h3>
+                  <p class="mt-0.5 text-xs text-slate-500">
+                    置信 · 绩效 {{ selectedRecord.aiAnalysis.modelJudgment.confidence.performance }} · 潜力
+                    {{ selectedRecord.aiAnalysis.modelJudgment.confidence.potential }}
+                  </p>
+                  <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-sm">
+                      <p class="text-[11px] font-bold text-indigo-900">人才画像</p>
+                      <div class="mt-2 flex flex-wrap gap-2">
                         <span
-                          v-for="(w, i) in selectedRecord.aiAnalysis.featureExtraction.abilityWords"
-                          :key="'aw-' + i"
-                          class="rounded bg-blue-50 px-2 py-1 text-blue-700"
+                          v-for="(tag, i) in selectedRecord.finalResult?.talentTags ?? selectedRecord.aiAnalysis.suggestion.talentTags"
+                          :key="'a-t-' + i"
+                          class="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-medium text-indigo-900"
+                          >{{ tag }}</span
+                        >
+                      </div>
+                      <p v-if="selectedRecord.aiAnalysis.semanticHits?.length" class="mt-3 text-[11px] text-slate-600">
+                        规则库语义命中 {{ selectedRecord.aiAnalysis.semanticHits.length }} 项素质维度
+                      </p>
+                    </div>
+                    <div class="rounded-xl border border-indigo-100 bg-white p-4 shadow-sm">
+                      <p class="text-[11px] font-bold text-emerald-800">优势 · 证据</p>
+                      <ul class="mt-2 list-inside list-disc space-y-1 text-xs text-slate-700">
+                        <li v-for="(w, i) in selectedRecord.aiAnalysis.featureExtraction.abilityWords" :key="'adv-' + i">{{ w }}</li>
+                        <li v-for="(s, k) in selectedRecord.aiAnalysis.classification" :key="'cl-' + k">
+                          {{ k }}（{{ s.strength }}）
+                        </li>
+                      </ul>
+                    </div>
+                    <div class="rounded-xl border border-amber-100 bg-amber-50/40 p-4 shadow-sm md:col-span-2">
+                      <p class="text-[11px] font-bold text-amber-900">风险与关注点</p>
+                      <div class="mt-2 flex flex-wrap gap-2">
+                        <span
+                          v-for="(w, i) in selectedRecord.aiAnalysis.featureExtraction.emotionWords"
+                          :key="'emo-' + i"
+                          class="rounded bg-white px-2 py-0.5 text-xs text-amber-900 ring-1 ring-amber-200"
                           >{{ w }}</span
                         >
                         <span
-                          v-if="selectedRecord.aiAnalysis.featureExtraction.abilityWords.length === 0"
-                          class="text-slate-300"
-                          >-</span
+                          v-for="(w, i) in selectedRecord.aiAnalysis.featureExtraction.improvementPoints"
+                          :key="'imp-' + i"
+                          class="rounded bg-white px-2 py-0.5 text-xs text-slate-800 ring-1 ring-slate-200"
+                          >{{ w }}</span
                         >
                       </div>
+                      <p v-if="selectedRecord.aiAnalysis.suggestion.riskTip" class="mt-3 text-sm text-amber-950">
+                        {{ selectedRecord.aiAnalysis.suggestion.riskTip }}
+                      </p>
                     </div>
-                    <div>
-                      <div class="mb-1 text-slate-500">改进点 / 风险信号</div>
-                      <div class="flex flex-wrap gap-2">
-                        <template
-                          v-for="(w, i) in [
-                            ...selectedRecord.aiAnalysis.featureExtraction.emotionWords,
-                            ...selectedRecord.aiAnalysis.featureExtraction.improvementPoints
-                          ]"
-                          :key="'im-' + i"
-                        >
-                          <span class="rounded bg-amber-50 px-2 py-1 text-amber-800">{{ w }}</span>
-                        </template>
-                        <span
-                          v-if="
-                            selectedRecord.aiAnalysis.featureExtraction.emotionWords.length === 0 &&
-                            selectedRecord.aiAnalysis.featureExtraction.improvementPoints.length === 0
-                          "
-                          class="text-slate-300"
-                          >-</span
-                        >
-                      </div>
+                    <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm md:col-span-2">
+                      <p class="text-[11px] font-bold text-slate-800">发展建议</p>
+                      <ul class="mt-2 list-inside list-disc space-y-1 text-sm text-slate-700">
+                        <li v-for="(t, i) in selectedRecord.finalResult?.developmentSuggestions ?? selectedRecord.aiAnalysis.suggestion.developmentSuggestions ?? []" :key="'sg-' + i">
+                          {{ t }}
+                        </li>
+                      </ul>
+                      <p class="mt-2 text-xs text-slate-500">证据摘录</p>
+                      <ul class="mt-1 list-inside list-disc text-xs text-slate-600">
+                        <li v-for="(s, i) in selectedRecord.aiAnalysis.evidenceSnippets" :key="'ev-' + i">{{ s }}</li>
+                      </ul>
                     </div>
-                  </div>
-                  <div class="mt-4">
-                    <div class="mb-1 text-slate-500">证据片段</div>
-                    <ul class="list-inside list-disc text-sm text-slate-700">
-                      <li v-for="(s, i) in selectedRecord.aiAnalysis.evidenceSnippets" :key="'ev-' + i">{{ s }}</li>
-                    </ul>
-                  </div>
-                  <div
-                    v-if="selectedRecord.aiAnalysis.suggestion.riskTip"
-                    class="mt-3 rounded-lg bg-red-50 p-3 text-sm text-red-700"
-                  >
-                    {{ selectedRecord.aiAnalysis.suggestion.riskTip }}
                   </div>
                 </div>
 
@@ -286,28 +351,6 @@
                     保存校准结果
                   </button>
                 </div>
-
-                <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-                  <h3 class="mb-3 text-base font-bold text-slate-900">人才标签与发展建议</h3>
-                  <div class="mb-4 flex flex-wrap gap-2">
-                    <span
-                      v-for="(tag, i) in selectedRecord.finalResult?.talentTags ??
-                      selectedRecord.aiAnalysis.suggestion.talentTags"
-                      :key="'tag-' + i"
-                      class="rounded-full bg-slate-100 px-3 py-1 text-sm text-slate-700"
-                      >{{ tag }}</span
-                    >
-                  </div>
-                  <ul
-                    v-if="
-                      selectedRecord.finalResult?.developmentSuggestions &&
-                      selectedRecord.finalResult.developmentSuggestions.length > 0
-                    "
-                    class="list-inside list-disc space-y-1 text-sm text-slate-600"
-                  >
-                    <li v-for="(s, i) in selectedRecord.finalResult.developmentSuggestions" :key="'dev-' + i">{{ s }}</li>
-                  </ul>
-                </div>
               </div>
             </div>
           </div>
@@ -315,7 +358,7 @@
 
         <!-- 新建 -->
         <template v-else-if="view.tab === 'add'">
-          <div class="mx-auto max-w-3xl">
+          <div class="mx-auto max-w-4xl">
             <button
               type="button"
               class="mb-4 text-sm font-medium text-indigo-600 hover:underline"
@@ -323,107 +366,266 @@
             >
               ← 返回列表
             </button>
-            <div class="rounded-2xl border border-slate-200 bg-white p-8 shadow-sm">
-              <h2 class="mb-6 text-xl font-bold text-slate-900">新建人才档案 · 录入素材后由模型分析</h2>
 
-              <div class="mb-6 grid grid-cols-1 gap-x-6 gap-y-4 sm:grid-cols-2">
+            <h2 class="mb-6 text-xl font-bold text-slate-900">新建人才档案 · 规则与表单双向绑定</h2>
+
+            <!-- 模块一：基本信息 -->
+            <section
+              class="mb-6 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm ring-1 ring-slate-100/80"
+            >
+              <div class="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">一</span>
+                <h3 class="text-base font-bold text-slate-900">基本信息</h3>
+              </div>
+              <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">姓名 *</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">姓名 *</label>
                   <input
                     v-model="emp.name"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="张三"
+                    class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="请输入"
                   />
                 </div>
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">部门</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">部门</label>
                   <select
                     v-model="emp.department"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   >
                     <option v-for="d in DEPTS" :key="d" :value="d">{{ d }}</option>
                   </select>
                 </div>
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">岗位</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">当前岗位</label>
                   <input
                     v-model="emp.role"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                    placeholder="产品经理"
+                    class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    placeholder="岗位名称"
                   />
                 </div>
                 <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">职级</label>
+                  <label class="mb-1 block text-sm font-medium text-slate-700">职级层级 *</label>
                   <select
-                    v-model="emp.level"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    v-model="emp.jobTier"
+                    class="w-full rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   >
-                    <option v-for="l in LEVELS" :key="l" :value="l">{{ l }}</option>
+                    <option v-for="jt in JOB_TIER_OPTIONS" :key="jt" :value="jt">{{ jt }}</option>
                   </select>
+                  <p class="mt-1 text-[11px] text-slate-500">与规则库基层、中层、高层能力字典一一对应，切换后素质项将重新生成。</p>
                 </div>
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">入职时长</label>
+                <div class="sm:col-span-2">
+                  <label class="mb-1 block text-sm font-medium text-slate-700">入职时长</label>
                   <select
                     v-model="emp.tenure"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    class="w-full max-w-md rounded-lg border border-slate-200 px-4 py-2.5 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
                   >
                     <option v-for="t in TENURES" :key="t" :value="t">{{ t }}</option>
                   </select>
                 </div>
-                <div>
-                  <label class="mb-1 block text-sm font-medium text-slate-600">绩效评分 (0-100)</label>
-                  <input
-                    v-model.number="emp.performanceScore"
-                    type="number"
-                    min="0"
-                    max="100"
-                    class="w-full rounded-lg border border-slate-200 px-4 py-2 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                  />
+              </div>
+            </section>
+
+            <!-- 模块二：业绩结果（横轴） -->
+            <section
+              class="mb-6 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm ring-1 ring-slate-100/80"
+            >
+              <div class="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">二</span>
+                <h3 class="text-base font-bold text-slate-900">业绩结果（横轴）</h3>
+              </div>
+              <p class="mb-4 text-sm text-slate-600">
+                绩效占 70%；日常工作三项各为 1～4 分（待改进 / 合格 / 良好 / 卓越）。日常得分 = ((三项之和 − 3) / 9) × 100，横轴综合分 = 绩效 × 0.7 + 日常得分 × 0.3。
+              </p>
+              <div class="mb-6 rounded-xl border border-indigo-100/80 bg-indigo-50/30 px-4 py-3">
+                <label class="text-sm font-medium text-slate-800">绩效得分（零至百分制）</label>
+                <input
+                  v-model.number="emp.performanceScore"
+                  type="number"
+                  min="0"
+                  max="100"
+                  class="mt-2 w-full max-w-xs rounded-lg border border-slate-200 bg-white px-4 py-2.5 tabular-nums focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                />
+              </div>
+              <div class="space-y-4">
+                <div class="text-sm font-semibold text-slate-800">日常工作评分（三成权重）</div>
+                <div v-for="axis in DAILY_AXIS_META" :key="axis.key" class="rounded-xl border border-slate-200/90 bg-slate-50/40 p-4">
+                  <div class="mb-2 text-center text-sm font-bold text-indigo-950">【{{ axis.title }}】</div>
+                  <div class="flex flex-wrap gap-0 overflow-hidden rounded-xl border border-slate-200 bg-white p-0.5 sm:flex-nowrap">
+                    <button
+                      v-for="seg in DAILY_TIER_SEGMENTS"
+                      :key="seg.key"
+                      type="button"
+                      class="group relative min-w-0 flex-1 px-1 py-2.5 text-center text-[11px] font-semibold transition-all sm:py-3"
+                      :class="
+                        emp.dailyTiers?.[axis.key] === seg.key
+                          ? 'rounded-lg bg-indigo-800 text-white shadow-lg shadow-indigo-900/35 ring-2 ring-indigo-400/80'
+                          : 'rounded-lg text-slate-500 hover:bg-slate-100'
+                      "
+                      @click="setFormDailyTier(axis.key, seg.key)"
+                    >
+                      {{ seg.segmentLabel }}
+                      <span
+                        v-if="emp.dailyTiers?.[axis.key] === seg.key"
+                        class="pointer-events-none absolute -bottom-1 left-1/2 z-10 -translate-x-1/2 translate-y-full rounded-md bg-slate-900 px-2 py-0.5 text-[10px] font-bold text-white shadow-md opacity-0 transition-opacity group-hover:opacity-100"
+                        >分值 {{ seg.key }} 分</span
+                      >
+                    </button>
+                  </div>
+                  <div v-if="emp.dailyTiers?.[axis.key]" class="mt-3 space-y-1 rounded-lg border border-indigo-200/80 bg-indigo-950/5 px-3 py-2">
+                    <p class="text-xs font-semibold text-indigo-800">当前分值 · {{ emp.dailyTiers![axis.key] }} 分</p>
+                    <p class="text-sm font-semibold text-indigo-900">
+                      {{ DAILY_TIER_HEADLINE[axis.key][emp.dailyTiers![axis.key]!] }}
+                    </p>
+                    <p class="text-[12px] leading-relaxed text-slate-600">
+                      {{ DAILY_RULE_TEXT[axis.key][emp.dailyTiers![axis.key]!] }}
+                    </p>
+                  </div>
                 </div>
               </div>
+              <div
+                class="mt-4 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm"
+              >
+                <span class="text-slate-600">横轴综合分（实时）</span>
+                <span class="text-lg font-bold tabular-nums text-indigo-900">
+                  {{ addFormXAxisTotal ?? '—' }}
+                </span>
+              </div>
+            </section>
 
+            <!-- 模块三：素质评价（纵轴） -->
+            <section
+              class="mb-6 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm ring-1 ring-slate-100/80"
+            >
+              <div class="mb-4 flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-3">
+                <div class="flex items-center gap-2">
+                  <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">三</span>
+                  <h3 class="text-base font-bold text-slate-900">素质评价（纵轴）</h3>
+                </div>
+                <button
+                  type="button"
+                  class="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-xs font-semibold text-indigo-800 hover:bg-indigo-100"
+                  @click="fillCompetencyFromComment"
+                >
+                  AI 智能解析
+                </button>
+              </div>
+              <p class="mb-4 text-[13px] text-slate-600">
+                与 rules.md 对齐：每项 0～7 分；纵轴百分制 = 各项得分之和 ÷ 35 × 100（五维均填满时）。悬浮「?」查看行为量表。
+              </p>
+              <div class="space-y-4">
+                <div
+                  v-for="row in addFormCompetencyRows"
+                  :key="row.rowKey"
+                  class="rounded-xl border border-slate-200/90 bg-slate-50/30 p-4"
+                >
+                  <div class="mb-2 flex flex-wrap items-center gap-2">
+                    <span class="font-semibold text-slate-900">{{ row.competencyName }}</span>
+                    <span class="rounded bg-indigo-50 px-2 py-0.5 text-[11px] text-indigo-800 ring-1 ring-indigo-100/80"
+                      >{{ row.dimensionLabel }}</span
+                    >
+                    <span class="group relative inline-flex">
+                      <span
+                        class="inline-flex h-6 w-6 cursor-help items-center justify-center rounded-full bg-slate-200/80 text-xs font-bold text-slate-600 ring-1 ring-slate-300/80"
+                        >?</span
+                      >
+                      <span
+                        class="pointer-events-none invisible absolute left-0 top-full z-30 mt-2 w-[min(100vw-2rem,22rem)] max-h-64 overflow-y-auto rounded-lg border border-slate-200 bg-white p-3 text-[11px] leading-relaxed text-slate-700 shadow-xl group-hover:visible"
+                      >
+                        <span class="font-semibold text-indigo-900">零至七分行为标准</span>
+                        <pre class="mt-0.5 whitespace-pre-wrap font-sans">{{ formatScaleTooltip(row) }}</pre>
+                      </span>
+                    </span>
+                    <span
+                      v-if="emp.competencyScores?.[row.rowKey] != null"
+                      class="ml-auto rounded-md bg-indigo-900 px-2 py-0.5 text-[11px] font-bold text-white"
+                      >已选 {{ emp.competencyScores[row.rowKey] }} 分</span
+                    >
+                  </div>
+                  <div class="flex flex-wrap gap-1">
+                    <button
+                      v-for="b in COMPETENCY_BANDS"
+                      :key="row.rowKey + '-b-' + b"
+                      type="button"
+                      class="h-9 min-w-[2rem] rounded-lg border px-2 text-xs font-semibold tabular-nums transition-all"
+                      :class="
+                        emp.competencyScores?.[row.rowKey] === b
+                          ? 'border-indigo-700 bg-indigo-800 text-white shadow-md shadow-indigo-900/30'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-indigo-200 hover:bg-indigo-50/50'
+                      "
+                      @click="setFormCompetencyBand(row.rowKey, b)"
+                    >
+                      {{ b }}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <!-- 模块四：发展洞察 -->
+            <section
+              class="mb-6 rounded-2xl border border-slate-200/90 bg-white p-6 shadow-sm ring-1 ring-slate-100/80"
+            >
+              <div class="mb-4 flex items-center gap-2 border-b border-slate-100 pb-3">
+                <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">四</span>
+                <h3 class="text-base font-bold text-slate-900">发展洞察</h3>
+              </div>
               <div class="mb-4">
-                <label class="mb-1 block text-sm font-medium text-slate-600">绩效评语 *</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700">绩效评语 *</label>
                 <textarea
                   v-model="emp.performanceComment"
                   rows="4"
-                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                  placeholder="管理者撰写的定性评价…"
+                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="管理者定性评价，不少于二十字以便形成证据链"
                 />
+                <p v-if="addFormSemanticHitCount > 0" class="mt-2 text-xs text-indigo-800">
+                  AI 已为您自动识别 {{ addFormSemanticHitCount }} 项能力；点击下方条目可查看原文依据（模块三可再次「AI 智能解析」刷新）。
+                </p>
+                <ul v-if="emp.semanticHits?.length" class="mt-2 space-y-1 rounded-lg border border-indigo-100 bg-indigo-50/30 p-2 text-[11px] text-slate-700">
+                  <li v-for="(h, hi) in emp.semanticHits" :key="'hit-' + hi">
+                    <details class="rounded-md bg-white/80 px-2 py-1 ring-1 ring-indigo-100/80">
+                      <summary class="cursor-pointer font-medium text-indigo-900 marker:text-indigo-600">
+                        {{ h.命中项 }} · {{ h.推荐分数 }} 分
+                      </summary>
+                      <p class="mt-1 border-t border-slate-100 pt-1 text-slate-600">依据：{{ h.匹配证据 }}</p>
+                    </details>
+                  </li>
+                </ul>
               </div>
               <div class="mb-4">
-                <label class="mb-1 block text-sm font-medium text-slate-600">关键事件</label>
+                <label class="mb-1 block text-sm font-medium text-slate-700">关键事件与行为证据</label>
                 <textarea
                   v-model="emp.keyEvents"
-                  rows="2"
-                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  rows="3"
+                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="可记录关键项目、里程碑或客户反馈等"
                 />
               </div>
-              <div class="mb-6">
-                <label class="mb-1 block text-sm font-medium text-slate-600">发展反馈</label>
+              <div class="mb-2">
+                <label class="mb-1 block text-sm font-medium text-slate-700">下一步发展建议</label>
                 <textarea
                   v-model="emp.developmentFeedback"
-                  rows="2"
-                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  rows="3"
+                  class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  placeholder="培养方向、轮岗或培训等建议"
                 />
               </div>
+            </section>
 
-              <div class="flex flex-wrap gap-3">
-                <button
-                  type="button"
-                  class="rounded-lg bg-indigo-600 px-6 py-2.5 font-medium text-white shadow-sm hover:bg-indigo-700"
-                  @click="submitNewEmployee"
-                >
-                  模型分析并保存
-                </button>
-                <button
-                  type="button"
-                  class="rounded-lg border border-slate-200 px-6 py-2.5 font-medium hover:bg-slate-50"
-                  @click="setView('list')"
-                >
-                  取消
-                </button>
-              </div>
+            <div class="flex flex-wrap gap-3">
+              <button
+                type="button"
+                class="rounded-lg bg-indigo-600 px-6 py-2.5 font-medium text-white shadow-sm hover:bg-indigo-700"
+                @click="submitNewEmployee"
+              >
+                保存并生成洞察
+              </button>
+              <button
+                type="button"
+                class="rounded-lg border border-slate-200 px-6 py-2.5 font-medium text-slate-700 hover:bg-slate-50"
+                @click="setView('list')"
+              >
+                取消
+              </button>
             </div>
           </div>
         </template>
@@ -447,9 +649,9 @@
                     <th class="px-3 py-3 font-medium">职级</th>
                     <th class="px-3 py-3 font-medium">绩效分</th>
                     <th class="px-3 py-3 font-medium">潜力分</th>
-                    <th class="px-3 py-3 font-medium">九宫格</th>
                     <th class="px-3 py-3 font-medium">风险</th>
-                    <th class="px-3 py-3 font-medium">操作</th>
+                    <th class="px-3 py-3 font-medium">评估结果</th>
+                    <th class="px-3 py-3 font-medium">人才记录</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -464,9 +666,6 @@
                     <td class="px-3 py-4">{{ r.perf }}</td>
                     <td class="px-3 py-4">{{ r.pot }}</td>
                     <td class="px-3 py-4">
-                      <span class="font-medium" :style="{ color: r.grid.color }">{{ r.grid.label }}</span>
-                    </td>
-                    <td class="px-3 py-4">
                       <span v-if="!r.finalResult?.riskLevel" class="text-slate-300">-</span>
                       <span
                         v-else
@@ -476,12 +675,17 @@
                       >
                     </td>
                     <td class="px-3 py-4">
+                      <span class="font-medium tabular-nums text-slate-600">{{ r.pos }}</span>
+                      <span class="mx-1 text-slate-300">·</span>
+                      <span class="font-medium" :style="{ color: r.grid.color }">{{ r.grid.label }}</span>
+                    </td>
+                    <td class="px-3 py-4">
                       <button
                         type="button"
                         class="text-sm font-medium text-indigo-600 hover:underline"
                         @click="setView('detail', r.employee.id)"
                       >
-                        查看详情
+                        打开档案
                       </button>
                     </td>
                   </tr>
@@ -694,6 +898,13 @@
                       <div class="min-w-0">
                         <h3 class="truncate font-bold text-slate-900">{{ c.name }}</h3>
                         <p class="text-[11px] text-slate-500">{{ c.department }} · {{ c.level }}</p>
+                        <button
+                          type="button"
+                          class="mt-1 text-[11px] font-semibold text-indigo-600 hover:underline"
+                          @click="openLabCaseRecord(c.id)"
+                        >
+                          查看结构化人才记录
+                        </button>
                       </div>
                       <span
                         class="lab-grid-badge shrink-0 rounded-lg px-2.5 py-1 text-[10px] font-bold tracking-wide ring-1"
@@ -706,9 +917,9 @@
                     <div
                       class="rounded-xl border border-indigo-100/90 bg-gradient-to-br from-indigo-50/40 via-white to-slate-50/80 p-4 shadow-inner ring-1 ring-slate-100/80"
                     >
-                      <p class="text-xs font-bold text-indigo-950">结构化业绩评价矩阵（横轴）</p>
+                      <p class="text-xs font-bold text-indigo-950">基准对比 · 横轴输入与模拟</p>
                       <p class="mt-1 text-[10px] leading-relaxed text-slate-500">
-                        七成为平均绩效得分，三成为日常工作评分。日常工作三项先按档位映射为十分制，取算术平均为「日常均分」；业绩综合分（百分制）= 绩效得分×0.7 + 日常均分×0.3×10。
+                        七成为绩效得分，三成为日常工作 1～4 分项；日常得分 = ((Σ−3)/9)×100，业绩综合分 = 绩效×0.7 + 日常得分×0.3。右栏滑块为决策推演，可与下方「实时结论」联动。
                       </p>
                       <div class="mt-3 rounded-lg border border-indigo-200/60 bg-white/80 px-3 py-2 text-[10px] text-slate-600">
                         <span class="font-semibold text-indigo-900">七成绩效区 · </span>
@@ -727,9 +938,7 @@
 
                       <div class="mt-4 rounded-lg border border-slate-200/80 bg-white/90 p-3">
                         <p class="text-[11px] font-semibold text-slate-800">三成日常工作区 · 横向档位</p>
-                        <p class="mt-0.5 text-[10px] text-slate-500">
-                          点选分段后下方展示规则库原文；三项十分制取平均为日常均分。
-                        </p>
+                        <p class="mt-0.5 text-[10px] text-slate-500">点选 1～4 分档后展示规则库原文，并计入日常得分。</p>
                         <div class="mt-3 space-y-4">
                           <div v-for="axis in DAILY_AXIS_META" :key="axis.key" class="space-y-2">
                             <div class="text-center text-[11px] font-bold text-indigo-950">
@@ -745,7 +954,7 @@
                                 class="min-w-0 flex-1 px-1 py-2.5 text-center text-[10px] font-semibold transition-all sm:py-3 sm:text-[11px]"
                                 :class="
                                   labPerfInputs[c.id]?.dailyTiers[axis.key] === seg.key
-                                    ? 'bg-indigo-600 text-white shadow-inner'
+                                    ? 'bg-indigo-800 text-white shadow-md shadow-indigo-900/25 ring-2 ring-indigo-400/60'
                                     : 'bg-white text-slate-700 hover:bg-indigo-50'
                                 "
                                 :title="dailyRuleLine(axis.key, seg.key)"
@@ -769,19 +978,26 @@
                         class="mt-3 grid grid-cols-1 gap-2 rounded-lg border border-slate-200/80 bg-slate-50/60 px-3 py-2 text-[10px] text-slate-700 sm:grid-cols-3"
                       >
                         <div>
-                          <span class="text-slate-500">日常工作均分（十分制）</span>
+                          <span class="text-slate-500">日常得分（百分制）</span>
                           <div class="font-bold tabular-nums text-indigo-900">
-                            {{ labDailyBreakdown(c.id).dailyAvg10 ?? '—' }}
+                            {{
+                              labDailyBreakdown(c.id).dailyPct != null
+                                ? Math.round(labDailyBreakdown(c.id).dailyPct as number)
+                                : '—'
+                            }}
                           </div>
                         </div>
                         <div>
-                          <span class="text-slate-500">七成项 / 三成项（分解）</span>
+                          <span class="text-slate-500">七成项 + 三成项</span>
                           <div class="tabular-nums text-slate-800">
                             {{ labDailyBreakdown(c.id).term1 }} + {{ labDailyBreakdown(c.id).term2 }}
+                            <span v-if="labDailyBreakdown(c.id).dailyPct != null" class="text-indigo-700">
+                              ≈ {{ labDailyBreakdown(c.id).totalComposite }}</span
+                            >
                           </div>
                         </div>
                         <div>
-                          <span class="text-slate-500">业绩综合分（百分制）</span>
+                          <span class="text-slate-500">矩阵业绩分（AI）</span>
                           <div class="font-bold tabular-nums text-indigo-900">
                             {{ labDailyBreakdown(c.id).totalPerf }}
                           </div>
@@ -979,33 +1195,51 @@
                         </li>
                       </ul>
                     </div>
-                    <div class="mt-3 grid grid-cols-2 gap-2">
-                      <div class="rounded-lg border border-slate-100 bg-white p-2">
-                        <div class="text-[9px] text-slate-500">业绩推断（矩阵复合）</div>
-                        <div class="text-lg font-bold tabular-nums text-slate-900">
-                          {{ labAnalysisByCaseId[c.id]?.performanceScore ?? 0 }}
+                    <div class="mt-3 space-y-2 rounded-lg border border-indigo-100/80 bg-white/90 p-3">
+                      <p class="text-[10px] font-bold text-indigo-900">实时结论 · 与右栏滑块联动</p>
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-md border border-slate-100 bg-slate-50/80 p-2">
+                          <div class="text-[9px] text-slate-500">人评价（初始模型）</div>
+                          <div class="text-xs tabular-nums text-slate-700">
+                            业绩 {{ labAnalysisByCaseId[c.id]?.performanceScore ?? 0 }} · 潜力
+                            {{ labAnalysisByCaseId[c.id]?.potentialScore ?? 0 }}
+                          </div>
                         </div>
-                        <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            class="lab-bar-fill h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
-                            :style="{
-                              width: `${Math.min(100, Math.max(0, labAnalysisByCaseId[c.id]?.performanceScore ?? 0))}%`
-                            }"
-                          />
+                        <div class="rounded-md border border-indigo-200 bg-indigo-50/50 p-2">
+                          <div class="text-[9px] font-semibold text-indigo-800">决策推演（当前）</div>
+                          <div class="text-xs font-bold tabular-nums text-indigo-950">
+                            业绩 {{ displayLabPerf(c.id) }} · 潜力 {{ displayLabPot(c.id) }}
+                          </div>
                         </div>
                       </div>
-                      <div class="rounded-lg border border-slate-100 bg-white p-2">
-                        <div class="text-[9px] text-slate-500">潜力推断</div>
-                        <div class="text-lg font-bold tabular-nums text-slate-900">
-                          {{ labAnalysisByCaseId[c.id]?.potentialScore ?? 0 }}
+                      <div class="grid grid-cols-2 gap-2">
+                        <div class="rounded-lg border border-slate-100 bg-white p-2">
+                          <div class="text-[9px] text-slate-500">业绩刻度</div>
+                          <div class="text-lg font-bold tabular-nums text-slate-900">
+                            {{ displayLabPerf(c.id) }}
+                          </div>
+                          <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                            <div
+                              class="lab-bar-fill h-full rounded-full bg-gradient-to-r from-blue-500 to-indigo-500"
+                              :style="{
+                                width: `${Math.min(100, Math.max(0, displayLabPerf(c.id)))}%`
+                              }"
+                            />
+                          </div>
                         </div>
-                        <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
-                          <div
-                            class="lab-bar-fill h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500"
-                            :style="{
-                              width: `${Math.min(100, Math.max(0, labAnalysisByCaseId[c.id]?.potentialScore ?? 0))}%`
-                            }"
-                          />
+                        <div class="rounded-lg border border-slate-100 bg-white p-2">
+                          <div class="text-[9px] text-slate-500">潜力刻度</div>
+                          <div class="text-lg font-bold tabular-nums text-slate-900">
+                            {{ displayLabPot(c.id) }}
+                          </div>
+                          <div class="mt-1 h-1.5 overflow-hidden rounded-full bg-slate-200">
+                            <div
+                              class="lab-bar-fill h-full rounded-full bg-gradient-to-r from-emerald-400 to-teal-500"
+                              :style="{
+                                width: `${Math.min(100, Math.max(0, displayLabPot(c.id)))}%`
+                              }"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1447,7 +1681,7 @@
  * 业务逻辑对齐 `src/App.tsx`（与仓库内人才盘点 React 应用一致）。
  */
 import { ref, reactive, computed, watch, onMounted } from 'vue'
-import type { TalentRecord, EmployeeInput, AIAnalysis } from './types'
+import type { TalentRecord, EmployeeInput, AIAnalysis, JobTier } from './types'
 import { GRID_MAP } from './types'
 import { loadRecords, saveRecords, addRecord, deleteRecord } from './lib/storage'
 import { runAIAnalysis } from './lib/aiEngine'
@@ -1457,6 +1691,7 @@ import {
   COMPETENCY_SOURCES,
   buildTableRows,
   parseScaleBands,
+  type CompetencySourceRow,
   type OrgLevel,
   type ScaleBandLine
 } from './competencyRules'
@@ -1464,10 +1699,15 @@ import {
   DAILY_AXIS_META,
   DAILY_RULE_TEXT,
   DAILY_TIER_SEGMENTS,
-  TIER_NUMERIC_10,
+  DAILY_TIER_HEADLINE,
+  computeDailyWorkPercent,
+  computeXAxisTotal,
+  BAND_TO_POINT,
   type DailyAxisKey,
+  type DailyPointLevel,
   type PerfBand
 } from './dailyWorkRules'
+import { semanticScanComment } from './lib/semanticEngine'
 
 /** 与 public/data/test_cases.json 对齐 */
 interface TestCaseJson {
@@ -1492,8 +1732,20 @@ type GridInfo = (typeof GRID_MAP)[string]
 type FullRow = TalentRecord & { perf: number; pot: number; pos: string; grid: GridInfo }
 
 const DEPTS = ['产品部', '研发部', '技术部', '市场部', '运营部', '人力行政部', '业务部'] as const
-const LEVELS = ['P4', 'P5', 'P6', 'M1', 'M2', '基层', '中层', '高层'] as const
 const TENURES = ['1年', '2年', '3年', '5年+'] as const
+
+const JOB_TIER_OPTIONS: JobTier[] = ['基层', '中层', '高层']
+
+function jobTierToOrg(jt: JobTier): 'junior' | 'middle' | 'senior' {
+  return jt === '基层' ? 'junior' : jt === '中层' ? 'middle' : 'senior'
+}
+
+function emptyScoresForTier(jt: JobTier): Record<string, number | null> {
+  const org = jobTierToOrg(jt)
+  const o: Record<string, number | null> = {}
+  for (const r of COMPETENCY_SOURCES[org]) o[r.rowKey] = null
+  return o
+}
 
 const statPalette: Record<string, string> = {
   blue: '#3b82f6',
@@ -1542,9 +1794,9 @@ function setOrgLevel(level: OrgLevel) {
 }
 
 interface LabDailyTiers {
-  contribution: PerfBand | null
-  quality: PerfBand | null
-  timeliness: PerfBand | null
+  contribution: DailyPointLevel | null
+  quality: DailyPointLevel | null
+  timeliness: DailyPointLevel | null
 }
 
 interface LabPerfInput {
@@ -1563,7 +1815,7 @@ const quarterOptions = [
 ]
 const feedbackScenarioOptions = ['季度考核', '三百六十度反馈', '项目总结'] as const
 
-function dailyRuleLine(axisKey: DailyAxisKey, tier: PerfBand | null | undefined): string {
+function dailyRuleLine(axisKey: DailyAxisKey, tier: DailyPointLevel | null | undefined): string {
   if (!tier) return ''
   return DAILY_RULE_TEXT[axisKey][tier]
 }
@@ -1581,7 +1833,7 @@ function ensureLabMetaRow(id: string) {
   if (!labCaseMeta[id]) labCaseMeta[id] = { quarter: '', scenario: '' }
 }
 
-function setDailyTier(caseId: string, axis: keyof LabDailyTiers, tier: PerfBand) {
+function setDailyTier(caseId: string, axis: keyof LabDailyTiers, tier: DailyPointLevel) {
   ensureLabPerfRow(caseId)
   const cur = labPerfInputs[caseId].dailyTiers[axis]
   labPerfInputs[caseId].dailyTiers[axis] = cur === tier ? null : tier
@@ -1645,9 +1897,7 @@ function smartPromptForCase(caseId: string): string {
   }
   ;(['contribution', 'quality', 'timeliness'] as const).forEach(k => {
     const t = inp.dailyTiers[k]
-    if (t) {
-      parts.push(`${labels[k]}已选档位「${t}」。`)
-    }
+    if (t) parts.push(`${labels[k]}已选 ${t} 分档。`)
   })
   return parts.join('')
 }
@@ -1729,7 +1979,7 @@ function matchedNegativesInText(text: string, orgLevel: OrgLevel): string[] {
 function detectTimelinessConflict(text: string, labInput?: LabPerfInput): boolean {
   if (!labInput?.dailyTiers.timeliness) return false
   const t = labInput.dailyTiers.timeliness
-  if (t !== '9-10') return false
+  if (t !== 4) return false
   const cues = ['经常延期', '延期', '拖延', '不能按期', '未按时', '拖期', '延误', '屡次延期']
   return cues.some(c => text.includes(c))
 }
@@ -1749,14 +1999,11 @@ function labDailyBreakdown(caseId: string) {
   ensureLabPerfRow(caseId)
   const inp = labPerfInputs[caseId]
   const d = inp.dailyTiers
-  const n0 = d.contribution ? TIER_NUMERIC_10[d.contribution] : null
-  const n1 = d.quality ? TIER_NUMERIC_10[d.quality] : null
-  const n2 = d.timeliness ? TIER_NUMERIC_10[d.timeliness] : null
-  const nums = [n0, n1, n2].filter((x): x is number => x !== null)
-  const dailyAvg10 =
-    nums.length > 0
-      ? Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10
-      : null
+  const dailyPct = computeDailyWorkPercent({
+    contribution: d.contribution,
+    quality: d.quality,
+    timeliness: d.timeliness
+  })
   const a = labAnalysisByCaseId.value[caseId]
   const hasAvg =
     inp.averagePerformanceScore !== null && !Number.isNaN(Number(inp.averagePerformanceScore))
@@ -1764,14 +2011,17 @@ function labDailyBreakdown(caseId: string) {
     ? Math.max(0, Math.min(100, Number(inp.averagePerformanceScore)))
     : (a?.keywordPerfEstimate ?? 0)
   const term1 = effPerf * 0.7
-  const term2 = dailyAvg10 !== null ? dailyAvg10 * 0.3 * 10 : 0
+  const term2 = dailyPct !== null ? dailyPct * 0.3 : 0
+  const totalComposite =
+    dailyPct !== null ? computeXAxisTotal(effPerf, dailyPct) : Math.round(Math.min(100, Math.max(0, effPerf)))
   return {
-    dailyAvg10,
+    dailyPct,
     term1: Math.round(term1 * 10) / 10,
     term2: Math.round(term2 * 10) / 10,
     totalPerf: a?.performanceScore ?? 0,
     effPerf,
-    hasAvg
+    hasAvg,
+    totalComposite
   }
 }
 
@@ -1812,28 +2062,6 @@ interface TalentAnalysisResult {
   timelinessConflict: boolean
 }
 
-function scoreCompetencyFromText(
-  text: string,
-  positive: string[],
-  negative: string[],
-  matchedKeywords: string[]
-): number {
-  let base = 48
-  for (const w of positive) {
-    if (w && text.includes(w)) {
-      base += 11
-      if (!matchedKeywords.includes(w)) matchedKeywords.push(w)
-    }
-  }
-  for (const w of negative) {
-    if (w && text.includes(w)) {
-      base -= 14
-      if (!matchedKeywords.includes(w)) matchedKeywords.push(w)
-    }
-  }
-  return Math.max(0, Math.min(100, Math.round(base)))
-}
-
 function keywordPerformanceEstimate(text: string, matchedKeywords: string[]): number {
   let perfHits = 0
   for (const kw of PERFORMANCE_KEYWORDS) {
@@ -1845,31 +2073,26 @@ function keywordPerformanceEstimate(text: string, matchedKeywords: string[]): nu
   return Math.min(100, Math.round(38 + perfHits * 9))
 }
 
-/**
- * 业绩综合分（百分制）= 绩效得分×0.7 + 日常工作均分×0.3×10
- * 其中日常工作三项先映射为十分制，再取算术平均作为「日常均分」
- */
+/** 业绩综合分（百分制）= 绩效得分×0.7 + 日常得分×0.3；日常得分 = ((Σ三项−3)/9)×100 */
 function compositePerformanceScore(
   keywordPerf: number,
   labInput: LabPerfInput | undefined
 ): number {
   if (!labInput) return keywordPerf
   const d = labInput.dailyTiers
-  const n0 = d.contribution ? TIER_NUMERIC_10[d.contribution] : null
-  const n1 = d.quality ? TIER_NUMERIC_10[d.quality] : null
-  const n2 = d.timeliness ? TIER_NUMERIC_10[d.timeliness] : null
-  const nums = [n0, n1, n2].filter((x): x is number => x !== null)
-  const anyDaily = nums.length > 0
-  const dailyAvg10 = anyDaily ? nums.reduce((a, b) => a + b, 0) / nums.length : null
+  const dailyPct = computeDailyWorkPercent({
+    contribution: d.contribution,
+    quality: d.quality,
+    timeliness: d.timeliness
+  })
+  const anyDaily = dailyPct !== null
   const avg = labInput.averagePerformanceScore
   const hasAvg = avg !== null && avg !== undefined && !Number.isNaN(Number(avg))
 
   if (!hasAvg && !anyDaily) return keywordPerf
   const perfPart = hasAvg ? Math.max(0, Math.min(100, Number(avg))) : keywordPerf
-  if (dailyAvg10 === null) return Math.round(perfPart)
-  return Math.round(
-    Math.min(100, Math.max(0, perfPart * 0.7 + dailyAvg10 * 0.3 * 10))
-  )
+  if (dailyPct === null) return Math.round(perfPart)
+  return computeXAxisTotal(perfPart, dailyPct)
 }
 
 function analyzeTalentLogic(
@@ -1884,12 +2107,20 @@ function analyzeTalentLogic(
 
   const matchedKeywords: string[] = []
   const rows = COMPETENCY_SOURCES[orgLevel]
+  const { scores: semScores } = semanticScanComment(text, orgLevel)
   const byDim: Record<string, number[]> = {}
 
   for (const r of rows) {
-    const sc = scoreCompetencyFromText(text, r.positive, r.negative, matchedKeywords)
+    const s7 = Math.max(0, Math.min(7, semScores[r.rowKey] ?? 3))
+    const s100 = (s7 / 7) * 100
     if (!byDim[r.dimensionKey]) byDim[r.dimensionKey] = []
-    byDim[r.dimensionKey].push(sc)
+    byDim[r.dimensionKey].push(s100)
+    for (const w of r.positive) {
+      if (w && text.includes(w) && !matchedKeywords.includes(w)) matchedKeywords.push(w)
+    }
+    for (const w of r.negative) {
+      if (w && text.includes(w) && !matchedKeywords.includes(w)) matchedKeywords.push(w)
+    }
   }
 
   const dimensionScores: Record<string, number> = {}
@@ -2217,17 +2448,26 @@ function testCaseJsonToRecord(c: TestCaseJson): TalentRecord {
   const gridPosition = getGridPos(perf, pot)
   const grid = GRID_MAP[gridPosition] || GRID_MAP['2-2']
   const riskLevel = riskFromGrid(grid)
-  const levelLabel =
-    c.level === 'senior' ? '高层' : c.level === 'middle' ? '中层' : c.level === 'junior' ? '基层' : c.level
+  const jt: JobTier =
+    c.level === 'senior' ? '高层' : c.level === 'middle' ? '中层' : c.level === 'junior' ? '基层' : '基层'
+  const org = jobTierToOrg(jt)
+  const { scores: semScores, hits: semHits } = semanticScanComment(c.raw_review, org)
+  const competencyScores: Record<string, number | null> = {}
+  for (const r of COMPETENCY_SOURCES[org]) {
+    competencyScores[r.rowKey] = Math.max(0, Math.min(7, Math.round(semScores[r.rowKey] ?? 3)))
+  }
 
   const employee: EmployeeInput = {
     id: `testcase-${c.id}`,
     name: c.name,
     department: c.department,
     role: '实验室样本',
-    level: levelLabel,
+    level: jt,
+    jobTier: jt,
     tenure: '2年',
     performanceScore: perf,
+    dailyTiers: { contribution: 3, quality: 3, timeliness: 3 },
+    competencyScores,
     performanceComment: c.raw_review,
     keyEvents: '',
     developmentFeedback: ''
@@ -2244,6 +2484,7 @@ function testCaseJsonToRecord(c: TestCaseJson): TalentRecord {
       improvementPoints: []
     },
     classification: {},
+    semanticHits: semHits,
     modelJudgment: {
       performanceScore: perf,
       potentialScore: pot,
@@ -2333,13 +2574,148 @@ const emp = ref<EmployeeInput>({
   name: '',
   department: '产品部',
   role: '',
-  level: 'P5',
+  level: '基层',
+  jobTier: '基层',
   tenure: '2年',
   performanceScore: 75,
+  dailyTiers: { contribution: null, quality: null, timeliness: null },
+  competencyScores: emptyScoresForTier('基层'),
   performanceComment: '',
   keyEvents: '',
   developmentFeedback: ''
 })
+
+const addFormCompetencyRows = computed(() => {
+  const jt = emp.value.jobTier ?? '基层'
+  return COMPETENCY_SOURCES[jobTierToOrg(jt)]
+})
+
+const addFormXAxisTotal = computed(() => {
+  const e = emp.value
+  const p = e.performanceScore
+  if (p === undefined || p === null) return null
+  const d = e.dailyTiers
+  if (!d || d.contribution == null || d.quality == null || d.timeliness == null) return null
+  const pct = computeDailyWorkPercent({
+    contribution: d.contribution,
+    quality: d.quality,
+    timeliness: d.timeliness
+  })
+  if (pct === null) return null
+  return computeXAxisTotal(p, pct)
+})
+
+const COMPETENCY_BANDS: readonly number[] = [0, 1, 2, 3, 4, 5, 6, 7]
+
+function setFormDailyTier(axis: DailyAxisKey, tier: DailyPointLevel) {
+  if (!emp.value.dailyTiers) {
+    emp.value.dailyTiers = { contribution: null, quality: null, timeliness: null }
+  }
+  const cur = emp.value.dailyTiers[axis]
+  emp.value.dailyTiers[axis] = cur === tier ? null : tier
+}
+
+function setFormCompetencyBand(rowKey: string, band: number) {
+  if (!emp.value.competencyScores) emp.value.competencyScores = {}
+  const cur = emp.value.competencyScores[rowKey]
+  const v = Math.max(0, Math.min(7, band))
+  emp.value.competencyScores[rowKey] = cur === v ? null : v
+}
+
+function setFormCompetencyScore(rowKey: string, e: Event) {
+  const raw = (e.target as HTMLInputElement).value.trim()
+  if (!emp.value.competencyScores) emp.value.competencyScores = {}
+  if (raw === '') {
+    emp.value.competencyScores[rowKey] = null
+    return
+  }
+  const n = Math.max(0, Math.min(7, Math.round(parseFloat(raw) || 0)))
+  emp.value.competencyScores[rowKey] = n
+}
+
+function formatScaleTooltip(row: CompetencySourceRow): string {
+  return row.scaleText
+}
+
+function fillCompetencyFromComment() {
+  const text = emp.value.performanceComment || ''
+  const jt = emp.value.jobTier ?? '基层'
+  const org = jobTierToOrg(jt)
+  if (!emp.value.competencyScores) emp.value.competencyScores = {}
+  const { hits, scores } = semanticScanComment(text, org)
+  emp.value.semanticHits = hits
+  for (const r of COMPETENCY_SOURCES[org]) {
+    const s = scores[r.rowKey]
+    if (s !== undefined) emp.value.competencyScores[r.rowKey] = Math.max(0, Math.min(7, Math.round(s)))
+  }
+}
+
+const addFormSemanticHitCount = computed(() => emp.value.semanticHits?.length ?? 0)
+
+function openLabCaseRecord(caseId: string) {
+  const id = `testcase-${caseId}`
+  if (!records.value.some(r => r.employee.id === id)) {
+    alert('请先点击「导入标准样例集」，将实验室样本同步至人才池后再查看结构化档案。')
+    return
+  }
+  setView('detail', id)
+}
+
+function migrateDailyTierValue(v: unknown): DailyPointLevel | null {
+  if (v === null || v === undefined) return null
+  if (typeof v === 'number' && v >= 1 && v <= 4) return v as DailyPointLevel
+  if (typeof v === 'string' && v in BAND_TO_POINT) return BAND_TO_POINT[v as PerfBand]
+  return null
+}
+
+function migrateEmployee(e: EmployeeInput): EmployeeInput {
+  const next = { ...e }
+  if (e.dailyTiers) {
+    next.dailyTiers = {
+      contribution: migrateDailyTierValue(e.dailyTiers.contribution),
+      quality: migrateDailyTierValue(e.dailyTiers.quality),
+      timeliness: migrateDailyTierValue(e.dailyTiers.timeliness)
+    }
+  }
+  if (e.competencyScores) {
+    const o = { ...e.competencyScores }
+    for (const k of Object.keys(o)) {
+      const v = o[k]
+      if (v != null && v > 7) o[k] = Math.max(0, Math.min(7, Math.round((Number(v) / 100) * 7)))
+    }
+    next.competencyScores = o
+  }
+  return next
+}
+
+function migrateTalentRecord(r: TalentRecord): TalentRecord {
+  return { ...r, employee: migrateEmployee(r.employee) }
+}
+
+function needsMigrationEmp(e: EmployeeInput): boolean {
+  const d = e.dailyTiers
+  if (d) {
+    for (const k of ['contribution', 'quality', 'timeliness'] as const) {
+      const v = d[k] as unknown
+      if (typeof v === 'string' && v in BAND_TO_POINT) return true
+    }
+  }
+  if (e.competencyScores) {
+    for (const v of Object.values(e.competencyScores)) {
+      if (v != null && Number(v) > 7) return true
+    }
+  }
+  return false
+}
+
+watch(
+  () => emp.value.jobTier,
+  jt => {
+    if (!jt) return
+    emp.value.level = jt
+    emp.value.competencyScores = emptyScoresForTier(jt)
+  }
+)
 
 onMounted(() => {
   const loaded = loadRecords()
@@ -2347,7 +2723,9 @@ onMounted(() => {
     saveRecords(SEED_RECORDS)
     records.value = SEED_RECORDS
   } else {
-    records.value = loaded
+    const migrated = loaded.map(migrateTalentRecord)
+    records.value = migrated
+    if (loaded.some(r => needsMigrationEmp(r.employee))) saveRecords(migrated)
   }
 })
 
@@ -2440,9 +2818,13 @@ watch(
         name: '',
         department: '产品部',
         role: '',
-        level: 'P5',
+        level: '基层',
+        jobTier: '基层',
         tenure: '2年',
         performanceScore: 75,
+        dailyTiers: { contribution: null, quality: null, timeliness: null },
+        competencyScores: emptyScoresForTier('基层'),
+        semanticHits: undefined,
         performanceComment: '',
         keyEvents: '',
         developmentFeedback: ''
@@ -2531,8 +2913,30 @@ function handleSaveCalibration() {
 }
 
 function submitNewEmployee() {
-  if (!emp.value.name || !emp.value.performanceComment) {
-    alert('请填写姓名和绩效评语')
+  if (!emp.value.name?.trim()) {
+    alert('请填写姓名')
+    return
+  }
+  const comment = (emp.value.performanceComment || '').replace(/\s/g, '')
+  if (comment.length < 20) {
+    alert('证据链不足，建议完善以提高模型置信度')
+    return
+  }
+  const jt = emp.value.jobTier ?? '基层'
+  const rows = COMPETENCY_SOURCES[jobTierToOrg(jt)]
+  const scores = emp.value.competencyScores ?? {}
+  const missingDim = rows.some(r => scores[r.rowKey] === undefined || scores[r.rowKey] === null)
+  if (missingDim) {
+    alert('证据链不足，建议完善以提高模型置信度')
+    return
+  }
+  const d = emp.value.dailyTiers
+  if (!d || d.contribution == null || d.quality == null || d.timeliness == null) {
+    alert('证据链不足，建议完善以提高模型置信度')
+    return
+  }
+  if (emp.value.performanceScore === undefined || emp.value.performanceScore === null) {
+    alert('证据链不足，建议完善以提高模型置信度')
     return
   }
   handleRunAI({ ...emp.value, id: 'emp-' + Date.now() })
