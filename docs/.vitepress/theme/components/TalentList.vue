@@ -265,66 +265,57 @@
   </template>
 
   <template v-else-if="view.tab === 'list'">
-    <!-- 固定浅色列表区：与站点亮/暗主题解耦，保证表格始终易读 -->
-    <div
-      class="talent-list-panel rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm [color-scheme:light] ring-1 ring-slate-900/5 dark:border-slate-200 dark:bg-white dark:text-slate-900"
-    >
+    <!-- 商务简约：白底 #333 字；风险/评估结果保持高饱和标签色 -->
+    <div class="talent-list-panel rounded-2xl border border-[#E4E7ED] bg-[#FFFFFF] p-6 shadow-sm [color-scheme:light]">
       <div class="mb-6 flex flex-wrap gap-4">
         <input
           v-model="searchQuery"
           type="search"
           placeholder="搜索姓名或部门"
-          class="w-full max-w-xs rounded-lg border border-slate-200 bg-[#f5f7fa] px-4 py-2.5 text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,border-color] placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 sm:w-64 dark:border-slate-300 dark:bg-[#f5f7fa] dark:text-slate-900 dark:placeholder:text-slate-600"
+          class="talent-list-search w-full max-w-xs rounded-lg border border-[#E4E7ED] bg-[#F5F7FA] px-4 py-2.5 text-[#333333] placeholder:text-[#909399] focus:border-[#409EFF] focus:outline-none focus:ring-2 focus:ring-[#409EFF]/20 sm:w-64"
           autocomplete="off"
         />
       </div>
-      <div
-        class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-200 dark:bg-slate-50/80"
-      >
-        <table
-          class="w-full min-w-[720px] border-collapse text-left text-sm text-slate-900 dark:text-slate-900"
-        >
+      <div class="talent-list-table-wrap overflow-x-auto rounded-lg border border-[#E4E7ED] bg-[#FFFFFF]">
+        <table class="talent-list-table w-full min-w-[720px] text-left text-sm">
           <thead>
-            <tr class="border-b-2 border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-200 dark:bg-slate-100 dark:text-slate-800">
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">姓名</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">部门</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">职级</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">绩效分</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">潜力分</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">风险</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">评估结果</th>
-              <th class="px-4 py-4 text-xs font-bold tracking-wide">人才记录</th>
+            <tr>
+              <th>姓名</th>
+              <th>部门</th>
+              <th>职级</th>
+              <th>绩效分</th>
+              <th>潜力分</th>
+              <th>风险</th>
+              <th>评估结果</th>
+              <th>人才记录</th>
             </tr>
           </thead>
           <tbody>
             <tr
               v-for="r in filteredList"
               :key="r.employee.id"
-              class="border-b border-slate-200/90 bg-white transition-colors hover:bg-slate-50 dark:border-slate-200/90 dark:bg-white dark:hover:bg-slate-50"
+              class="talent-list-row"
             >
-              <td class="px-4 py-5 font-medium text-slate-900 dark:text-slate-900">{{ r.employee.name }}</td>
-              <td class="px-4 py-5 text-slate-700 dark:text-slate-700">{{ r.employee.department }}</td>
-              <td class="px-4 py-5 text-slate-700 dark:text-slate-700">{{ r.employee.level }} {{ r.employee.role }}</td>
-              <td class="px-4 py-5 tabular-nums text-slate-900 dark:text-slate-900">{{ r.perf }}</td>
-              <td class="px-4 py-5 tabular-nums text-slate-900 dark:text-slate-900">{{ r.pot }}</td>
-              <td class="px-4 py-5">
-                <span v-if="!r.finalResult?.riskLevel" class="text-slate-400 dark:text-slate-400">-</span>
-                <span
-                  v-else
-                  class="rounded px-2 py-0.5 text-xs font-semibold"
-                  :class="riskBadgeCls(r.finalResult.riskLevel)"
-                  >{{ r.finalResult.riskLevel }}</span
-                >
+              <td class="text-[#333333]">{{ r.employee.name }}</td>
+              <td class="text-[#333333]">{{ r.employee.department }}</td>
+              <td class="text-[#333333]">{{ r.employee.level }} {{ r.employee.role }}</td>
+              <td class="tabular-nums text-[#333333]">{{ r.perf }}</td>
+              <td class="tabular-nums text-[#333333]">{{ r.pot }}</td>
+              <td>
+                <span v-if="!r.finalResult?.riskLevel" class="text-[#909399]">-</span>
+                <span v-else class="talent-tag" :class="listRiskTagClass(r.finalResult.riskLevel)">{{
+                  r.finalResult.riskLevel
+                }}</span>
               </td>
-              <td class="px-4 py-5">
-                <span class="font-semibold tabular-nums text-slate-800 dark:text-slate-800">{{ r.pos }}</span>
-                <span class="mx-1 text-slate-400 dark:text-slate-400">·</span>
-                <span class="font-semibold" :style="{ color: r.grid.color }">{{ r.grid.label }}</span>
+              <td>
+                <span class="font-semibold tabular-nums text-[#333333]">{{ r.pos }}</span>
+                <span class="mx-1 text-[#909399]">·</span>
+                <span class="font-semibold" :style="{ color: gridLabelBright(r.pos) }">{{ r.grid.label }}</span>
               </td>
-              <td class="px-4 py-5">
+              <td>
                 <button
                   type="button"
-                  class="text-sm font-semibold text-indigo-600 underline-offset-2 hover:text-indigo-800 hover:underline dark:text-indigo-600 dark:hover:text-indigo-800"
+                  class="talent-list-link text-sm font-semibold"
                   @click="setView('detail', r.employee.id)"
                 >
                   打开档案
@@ -339,6 +330,7 @@
 </template>
 
 <script setup lang="ts">
+import { GRID_MAP } from './types'
 import { useTalentReview } from './talentReviewContext'
 
 const {
@@ -359,4 +351,111 @@ const {
   searchQuery,
   filteredList
 } = useTalentReview()
+
+/** 列表专用风险标签：白底上保持高饱和红/琥珀/绿，类 Element danger / warning / success */
+function listRiskTagClass(level: '高' | '中' | '低') {
+  if (level === '高') return 'talent-tag--danger'
+  if (level === '中') return 'talent-tag--warning'
+  return 'talent-tag--success'
+}
+
+/** 评估结果：在白底上略提高九宫格语义色饱和度，避免发灰 */
+const gridLabelHex: Record<string, string> = {
+  '3-3': '#16a34a',
+  '2-3': '#0284c7',
+  '3-2': '#0284c7',
+  '2-2': '#7c3aed',
+  '1-3': '#d97706',
+  '3-1': '#d97706',
+  '2-1': '#ea580c',
+  '1-2': '#ea580c',
+  '1-1': '#dc2626'
+}
+
+function gridLabelBright(pos: string) {
+  return gridLabelHex[pos] ?? GRID_MAP[pos]?.color ?? '#333333'
+}
 </script>
+
+<style scoped>
+/* 覆盖父级 .talent-saas 对 table 的全局去边框规则 */
+.talent-list-panel :deep(table),
+.talent-list-table {
+  border-collapse: collapse;
+  background: #ffffff !important;
+  color: #333333;
+}
+
+.talent-list-table-wrap {
+  background: #ffffff;
+}
+
+.talent-list-table thead th {
+  background: #f5f7fa !important;
+  color: #000000;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  padding: 14px 16px;
+  border: 1px solid #e4e7ed;
+  border-bottom: 1px solid #e4e7ed;
+  vertical-align: middle;
+}
+
+.talent-list-table tbody td {
+  background: #ffffff !important;
+  color: #333333 !important;
+  padding: 16px;
+  border: 1px solid #e4e7ed;
+  vertical-align: middle;
+}
+
+.talent-list-row:hover td {
+  background: #f0f9ff !important;
+}
+
+/* 风险标签：保持鲜艳，不被单元格 #333 继承 */
+.talent-tag {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2rem;
+  padding: 2px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.5;
+  border: 1px solid transparent;
+}
+
+.talent-tag--danger {
+  background: #fef2f2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.talent-tag--warning {
+  background: #fffbeb;
+  color: #d97706;
+  border-color: #fde68a;
+}
+
+.talent-tag--success {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.talent-list-link {
+  color: #2563eb;
+  text-decoration: none;
+}
+.talent-list-link:hover {
+  color: #1d4ed8;
+  text-decoration: underline;
+}
+
+.talent-list-search:focus {
+  outline: none;
+}
+</style>
