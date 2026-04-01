@@ -1,6 +1,6 @@
 <template>
   <!-- 决策配置中心：判定规则 + 决策实验室 -->
-    <div class="mx-auto max-w-6xl space-y-6">
+    <div class="w-full min-w-0 space-y-6">
       <header
         class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm ring-1 ring-slate-100/80"
       >
@@ -81,54 +81,60 @@
             >{{ ruleConfig.minChars }} 字 · 低于此值将标记为低置信度输入</span
           >
         </div>
-        <div class="overflow-x-auto rounded-xl border border-slate-200/80">
-          <table class="w-full min-w-[960px] border-collapse text-left text-sm">
+        <div class="rules-table-shell w-full overflow-hidden rounded-xl border border-[#E4E7ED] bg-[#FFFFFF] [color-scheme:light]">
+          <table class="rules-judge-table w-full border-collapse text-left text-sm text-[#333333]">
+            <colgroup>
+              <col style="width: 15%" />
+              <col style="width: 23%" />
+              <col style="width: 23%" />
+              <col style="width: 27%" />
+              <col style="width: 12%" />
+            </colgroup>
             <thead>
-              <tr class="border-b border-slate-200 bg-slate-50/95">
-                <th class="whitespace-nowrap px-3 py-3 font-semibold text-slate-800">能力维度</th>
-                <th class="min-w-[200px] px-3 py-3 font-semibold text-slate-800">行为定义（原文）</th>
-                <th class="min-w-[200px] px-3 py-3 font-semibold text-slate-800">抓取逻辑（正向 / 负向）</th>
-                <th class="min-w-[260px] px-3 py-3 font-semibold text-slate-800">零至七分评分量表</th>
-                <th class="min-w-[140px] px-3 py-3 font-semibold text-slate-800">维度权重</th>
+              <tr>
+                <th class="rules-judge-th">能力维度</th>
+                <th class="rules-judge-th">行为定义（原文）</th>
+                <th class="rules-judge-th">抓取逻辑（正向 / 负向）</th>
+                <th class="rules-judge-th">零至七分评分量表</th>
+                <th class="rules-judge-th">维度权重</th>
               </tr>
             </thead>
             <tbody>
               <template v-for="row in competencyRowsForLevel" :key="row.rowKey">
-                <tr class="border-b border-slate-100 transition-colors hover:bg-indigo-50/25">
+                <tr class="rules-judge-tr">
                   <td
                     v-if="row._showDimCell"
-                    class="align-top border-r border-slate-100/80 bg-slate-50/40 px-3 py-3 font-medium text-slate-800"
+                    class="rules-judge-td rules-judge-td--dim align-top"
                     :rowspan="row._dimRowspan"
                   >
                     <span
-                      class="inline-flex flex-col gap-1 rounded-lg bg-indigo-50 px-2 py-1.5 text-xs font-bold text-indigo-900 ring-1 ring-indigo-100"
+                      class="rules-dim-tag inline-flex flex-col gap-1 rounded-lg px-2 py-1.5 text-xs font-bold"
+                      :class="rulesDimTagClass(row.dimensionKey)"
                     >
                       <span>{{ row.dimensionLabel }}</span>
-                      <span class="font-normal text-indigo-700/90">{{ row.competencyName }}</span>
+                      <span class="rules-dim-tag-sub font-semibold">{{ row.competencyName }}</span>
                     </span>
                   </td>
-                  <td class="align-top px-3 py-3 text-slate-700 leading-relaxed">{{ row.definition }}</td>
-                  <td class="align-top px-3 py-3 text-slate-700 leading-relaxed">{{ row.logicLine }}</td>
-                  <td
-                    class="align-top whitespace-pre-wrap px-3 py-3 text-xs leading-relaxed text-slate-600"
-                  >
+                  <td class="rules-judge-td align-top leading-relaxed">{{ row.definition }}</td>
+                  <td class="rules-judge-td align-top leading-relaxed">{{ row.logicLine }}</td>
+                  <td class="rules-judge-td rules-judge-td-scale align-top whitespace-pre-wrap text-xs leading-relaxed">
                     {{ row.scaleText }}
                   </td>
                   <td
                     v-if="row._showWeightCell"
-                    class="align-top border-l border-slate-100/80 px-3 py-3"
+                    class="rules-judge-td align-top"
                     :rowspan="row._dimRowspan"
                   >
-                    <div class="flex flex-col gap-2">
+                    <div class="flex min-w-0 flex-col gap-2">
                       <input
                         v-model.number="ruleConfig.dimensionWeights[row.dimensionKey]"
                         type="range"
                         min="0"
                         max="100"
                         step="1"
-                        class="h-2 w-full max-w-[160px] accent-indigo-600"
+                        class="rules-weight-range h-2 w-full min-w-0 accent-indigo-600"
                       />
-                      <span class="tabular-nums text-xs font-bold text-indigo-800"
+                      <span class="tabular-nums text-xs font-bold text-[#333333]"
                         >{{ ruleConfig.dimensionWeights[row.dimensionKey] }}%</span
                       >
                     </div>
@@ -710,4 +716,74 @@ const {
   gapPot,
   openLabCaseRecord
 } = useTalentReview()
+/** 判定规则表：维度 Tag 淡紫 / 淡蓝交替，与人才列表风格一致 */
+function rulesDimTagClass(dimensionKey: string) {
+  let h = 0
+  for (let i = 0; i < dimensionKey.length; i++) h += dimensionKey.charCodeAt(i)
+  return h % 2 === 0 ? 'rules-dim-tag--indigo' : 'rules-dim-tag--violet'
+}
+
 </script>
+
+<style scoped>
+/* 覆盖 TalentReviewApp .talent-saas :deep(table) 的去边框 / separate 规则 */
+.rules-table-shell {
+  overflow: hidden;
+}
+.rules-table-shell .rules-judge-table {
+  table-layout: fixed !important;
+  width: 100%;
+  border-collapse: collapse !important;
+  border-spacing: 0 !important;
+  background: #ffffff !important;
+}
+.rules-judge-th {
+  padding: 0.75rem;
+  font-weight: 700;
+  color: #333333;
+  background: #f5f7fa !important;
+  border: 1px solid #e4e7ed;
+  vertical-align: top;
+}
+.rules-judge-tr {
+  transition: background-color 0.15s ease;
+}
+.rules-judge-tr:hover {
+  background: #f0f9ff;
+}
+.rules-judge-tr:hover .rules-judge-td {
+  background: #f0f9ff !important;
+}
+.rules-judge-td {
+  padding: 0.75rem;
+  color: #333333 !important;
+  background: #ffffff !important;
+  border: 1px solid #e4e7ed;
+  vertical-align: top;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+.rules-judge-td--dim {
+  background: #ffffff;
+}
+.rules-judge-td-scale {
+  color: #333333;
+}
+.rules-dim-tag.rules-dim-tag--indigo {
+  background: #eef2ff;
+  color: #312e81;
+  box-shadow: inset 0 0 0 1px #c7d2fe;
+}
+.rules-dim-tag.rules-dim-tag--violet {
+  background: #f5f3ff;
+  color: #5b21b6;
+  box-shadow: inset 0 0 0 1px #ddd6fe;
+}
+.rules-dim-tag--indigo .rules-dim-tag-sub {
+  color: #4338ca;
+}
+.rules-dim-tag--violet .rules-dim-tag-sub {
+  color: #6d28d9;
+}
+</style>
