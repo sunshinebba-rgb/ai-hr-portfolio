@@ -118,3 +118,41 @@
 .vp-doc .VPHomeHero .text {
   letter-spacing: -0.02em;
 }
+
+/* 首页：锚点滚动至功能区块（特性列表），避开固定顶栏 */
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+.home-features-anchor {
+  scroll-margin-top: 72px;
+  height: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+/* 首页主 CTA（品牌色按钮）：悬停略微放大 */
+.VPHome .VPButton.brand {
+  transition:
+    transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1),
+    color 0.25s,
+    border-color 0.25s,
+    background-color 0.25s;
+}
+
+.VPHome .VPButton.brand:hover {
+  transform: scale(1.06);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .VPHome .VPButton.brand,
+  .VPHome .VPButton.brand:hover {
+    transform: none;
+  }
+}
