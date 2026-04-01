@@ -265,22 +265,27 @@
   </template>
 
   <template v-else-if="view.tab === 'list'">
+    <!-- 固定浅色列表区：与站点亮/暗主题解耦，保证表格始终易读 -->
     <div
-      class="talent-list-panel rounded-2xl border border-slate-600/45 bg-[#1d1e23] p-6 shadow-[0_8px_32px_rgba(0,0,0,0.35)] ring-1 ring-white/[0.06]"
+      class="talent-list-panel rounded-2xl border border-slate-200 bg-white p-6 text-slate-900 shadow-sm [color-scheme:light] ring-1 ring-slate-900/5 dark:border-slate-200 dark:bg-white dark:text-slate-900"
     >
       <div class="mb-6 flex flex-wrap gap-4">
         <input
           v-model="searchQuery"
           type="search"
           placeholder="搜索姓名或部门"
-          class="w-full max-w-xs rounded-lg border border-slate-600/80 bg-slate-900/55 px-4 py-2.5 text-[#e5e7eb] shadow-[inset_0_1px_0_rgba(255,255,255,0.06)] transition-[box-shadow,background-color,border-color] placeholder:text-slate-400 focus:border-sky-500/60 focus:outline-none focus:ring-2 focus:ring-sky-500/30 sm:w-64"
+          class="w-full max-w-xs rounded-lg border border-slate-200 bg-[#f5f7fa] px-4 py-2.5 text-slate-900 shadow-[0_2px_8px_rgba(15,23,42,0.06)] transition-[box-shadow,border-color] placeholder:text-slate-600 focus:border-indigo-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/25 sm:w-64 dark:border-slate-300 dark:bg-[#f5f7fa] dark:text-slate-900 dark:placeholder:text-slate-600"
           autocomplete="off"
         />
       </div>
-      <div class="overflow-x-auto rounded-xl border border-slate-600/35 bg-[#18191e]">
-        <table class="w-full min-w-[720px] border-collapse text-left text-sm text-[#e5e7eb]">
+      <div
+        class="overflow-x-auto rounded-xl border border-slate-200 bg-slate-50/80 dark:border-slate-200 dark:bg-slate-50/80"
+      >
+        <table
+          class="w-full min-w-[720px] border-collapse text-left text-sm text-slate-900 dark:text-slate-900"
+        >
           <thead>
-            <tr class="border-b border-slate-600/70 bg-[#12131a] text-slate-100">
+            <tr class="border-b-2 border-slate-200 bg-slate-100 text-slate-800 dark:border-slate-200 dark:bg-slate-100 dark:text-slate-800">
               <th class="px-4 py-4 text-xs font-bold tracking-wide">姓名</th>
               <th class="px-4 py-4 text-xs font-bold tracking-wide">部门</th>
               <th class="px-4 py-4 text-xs font-bold tracking-wide">职级</th>
@@ -295,35 +300,31 @@
             <tr
               v-for="r in filteredList"
               :key="r.employee.id"
-              class="border-b border-slate-700/70 transition-colors hover:bg-white/[0.04]"
+              class="border-b border-slate-200/90 bg-white transition-colors hover:bg-slate-50 dark:border-slate-200/90 dark:bg-white dark:hover:bg-slate-50"
             >
-              <td class="px-4 py-5 font-medium text-[#e5e7eb]">{{ r.employee.name }}</td>
-              <td class="px-4 py-5 text-slate-300">{{ r.employee.department }}</td>
-              <td class="px-4 py-5 text-slate-300">{{ r.employee.level }} {{ r.employee.role }}</td>
-              <td class="px-4 py-5 tabular-nums text-slate-200">{{ r.perf }}</td>
-              <td class="px-4 py-5 tabular-nums text-slate-200">{{ r.pot }}</td>
+              <td class="px-4 py-5 font-medium text-slate-900 dark:text-slate-900">{{ r.employee.name }}</td>
+              <td class="px-4 py-5 text-slate-700 dark:text-slate-700">{{ r.employee.department }}</td>
+              <td class="px-4 py-5 text-slate-700 dark:text-slate-700">{{ r.employee.level }} {{ r.employee.role }}</td>
+              <td class="px-4 py-5 tabular-nums text-slate-900 dark:text-slate-900">{{ r.perf }}</td>
+              <td class="px-4 py-5 tabular-nums text-slate-900 dark:text-slate-900">{{ r.pot }}</td>
               <td class="px-4 py-5">
-                <span v-if="!r.finalResult?.riskLevel" class="text-slate-500">-</span>
+                <span v-if="!r.finalResult?.riskLevel" class="text-slate-400 dark:text-slate-400">-</span>
                 <span
                   v-else
-                  class="inline-flex min-w-[2rem] items-center justify-center rounded-md px-2.5 py-1 text-xs font-semibold"
-                  :class="listRiskBadgeClass(r.finalResult.riskLevel)"
+                  class="rounded px-2 py-0.5 text-xs font-semibold"
+                  :class="riskBadgeCls(r.finalResult.riskLevel)"
                   >{{ r.finalResult.riskLevel }}</span
                 >
               </td>
               <td class="px-4 py-5">
-                <span class="font-semibold tabular-nums text-slate-200">{{ r.pos }}</span>
-                <span class="mx-1 text-slate-500">·</span>
-                <span
-                  class="font-semibold"
-                  :style="{ color: gridLabelBrightColor(r.pos, r.grid.color) }"
-                  >{{ r.grid.label }}</span
-                >
+                <span class="font-semibold tabular-nums text-slate-800 dark:text-slate-800">{{ r.pos }}</span>
+                <span class="mx-1 text-slate-400 dark:text-slate-400">·</span>
+                <span class="font-semibold" :style="{ color: r.grid.color }">{{ r.grid.label }}</span>
               </td>
               <td class="px-4 py-5">
                 <button
                   type="button"
-                  class="text-sm font-semibold text-sky-400 underline-offset-2 hover:text-sky-300 hover:underline"
+                  class="text-sm font-semibold text-indigo-600 underline-offset-2 hover:text-indigo-800 hover:underline dark:text-indigo-600 dark:hover:text-indigo-800"
                   @click="setView('detail', r.employee.id)"
                 >
                   打开档案
@@ -358,32 +359,4 @@ const {
   searchQuery,
   filteredList
 } = useTalentReview()
-
-/** 暗色列表专用：风险标签高对比 */
-function listRiskBadgeClass(level: '高' | '中' | '低') {
-  if (level === '高') {
-    return 'bg-rose-500/35 text-rose-50 ring-1 ring-rose-400/60 shadow-[0_0_12px_rgba(244,63,94,0.2)]'
-  }
-  if (level === '中') {
-    return 'bg-amber-500/30 text-amber-50 ring-1 ring-amber-400/55 shadow-[0_0_12px_rgba(245,158,11,0.15)]'
-  }
-  return 'bg-emerald-500/30 text-emerald-50 ring-1 ring-emerald-400/50 shadow-[0_0_12px_rgba(16,185,129,0.15)]'
-}
-
-/** 九宫格标签：在深色底上使用更亮的语义色 */
-const gridLabelVivid: Record<string, string> = {
-  '3-3': '#4ade80',
-  '2-3': '#38bdf8',
-  '3-2': '#38bdf8',
-  '2-2': '#c084fc',
-  '1-3': '#fbbf24',
-  '3-1': '#fbbf24',
-  '2-1': '#fb923c',
-  '1-2': '#fb923c',
-  '1-1': '#f87171'
-}
-
-function gridLabelBrightColor(pos: string, fallback: string) {
-  return gridLabelVivid[pos] ?? fallback
-}
 </script>
